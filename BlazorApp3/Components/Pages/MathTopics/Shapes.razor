@@ -225,7 +225,7 @@ else
         {
             case "Theory":
                 <p> @_currentTopic.Information</p>
-                <p> @_currentTopic.Theory</p>
+                <p> @RemoveHtmlTags(_currentTopic.Theory)</p>
                 <p>@RemoveHtmlTags(_currentTopic.Formulas)</p> 
                 break;
                 
@@ -234,7 +234,7 @@ else
                 {
                     <p>Loading practice question...</p>
                 }
-                else if (_currentPracticeQuestion == null) @* Check if null after loading completes *@
+                else if (_currentPracticeQuestion == null) //Check if null after loading completes 
                 {
                     <p class="loading-message">No questions found for this topic/difficulty.</p>
                     @if (_practiceErrorMessage != null) { <p class="error-message">Detail: @_practiceErrorMessage</p> }
@@ -244,7 +244,7 @@ else
                 {
                     <div class="practice-container">
                         <div class="question-text">
-                            @_currentPracticeQuestion.QuestionText
+                            @RemoveHtmlTags(_currentPracticeQuestion.QuestionText)
                             
                         </div>
                     </div>
@@ -260,7 +260,7 @@ else
                                         <input type="radio" name="practiceOptions" value="@optionLetter"
                                                @onchange="@(e => HandlePracticeMcqSelection(optionLetter))"
                                                checked="@(_practiceSelectedMcqOption == optionLetter && !_isAnswerChecked)"
-                                               disabled="@(_isAnswerChecked)" />
+                                               disabled="@(_isAnswerCorrect)" />
                                         @mcq.ShuffledOptions[i]
                                     </label>
                                 }
@@ -276,11 +276,11 @@ else
                             <div class="options-group">
                                 <label>
                                     <input type="radio" name="practiceTfOptions" value="True" @onchange="@(e => HandlePracticeTfSelection(true))"
-                                           checked="@(_practiceSelectedTfOption == true && !_isAnswerChecked)" disabled="@(_isAnswerChecked)"/> True
+                                           checked="@(_practiceSelectedTfOption == true && !_isAnswerChecked)" disabled="@(_isAnswerCorrect)"/> True
                                 </label>
                                 <label>
                                     <input type="radio" name="practiceTfOptions" value="False" @onchange="@(e => HandlePracticeTfSelection(false))"
-                                           checked="@(_practiceSelectedTfOption == false && !_isAnswerChecked)" disabled="@(_isAnswerChecked)"/> False
+                                           checked="@(_practiceSelectedTfOption == false && !_isAnswerChecked)" disabled="@(_isAnswerCorrect)"/> False
                                 </label>
                             </div>
                             @if (_isAnswerChecked) // Display feedback after checking
@@ -292,7 +292,7 @@ else
                             break;
 
                         case QuestionType.TypeIn:
-                            <input type="text" @bind-value="_practiceTypedInAnswer" @bind-value:event="oninput" class="form-control" placeholder="Type your answer here..." disabled="@(_isAnswerChecked)"/>
+                            <input type="text" @bind-value="_practiceTypedInAnswer" @bind-value:event="oninput" class="form-control" placeholder="Type your answer here..." disabled="@(_isAnswerCorrect)"/>
                             @if (_isAnswerChecked) // Display feedback after checking
                             {
                                 <div class="feedback-message @( _isAnswerCorrect ? "feedback-correct" : "feedback-incorrect")">
@@ -301,13 +301,19 @@ else
                             }
                             break;
                     }
+                    @if (_isAnswerChecked && !_isAnswerCorrect && !string.IsNullOrEmpty(_currentPracticeQuestion.QuestionHint))
+                    {
+                        <div class="question-hint">
+                            Hint: @RemoveHtmlTags(_currentPracticeQuestion.QuestionHint)
+                        </div>
+                    }
                     
                     <div class="practice-controls">
-                        @if (!_isAnswerChecked)
+                        @if (!_isAnswerCorrect)
                         {
                             <button class="btn-action" @onclick = "CheckPracticeQuestion">Check Answer</button>
                         }
-                        else
+                        @if (_isAnswerChecked)
                         {
                             <button class="btn-action btn-next" @onclick="LoadRandomPracticeQuestion">Next Question</button>
                         }
@@ -383,8 +389,9 @@ else
     bool _practiceLoading = true;
     bool _isAnswerChecked = false;
     bool _isAnswerCorrect = false;
+    private bool _showHint = false;
 
-
+    private int _incorrectAttempts = 0;
     private char _practiceSelectedMcqOption;
     private bool? _practiceSelectedTfOption;
     private string _practiceTypedInAnswer;
@@ -395,12 +402,13 @@ else
     private int _selectedLenght = 5;
     private bool _isTimed = false;
     private int _testDuration = 15;
+    
 
     protected override async Task OnInitializedAsync()
     {
         if (!UserSession.isLoggedIn)
         {
-            NavigationManager.NavigateTo("/login", true);
+            NavigationManager.NavigateTo("/", true);
             return;
         }
 
@@ -477,6 +485,8 @@ else
 
         _isAnswerChecked = false;
         _isAnswerCorrect = false;
+        _showHint = false;
+        _incorrectAttempts = 0;
         ClearPracticeUserAnswer();
 
         try
@@ -507,24 +517,23 @@ else
         }
 
         object userAnswer = GetCurrentPracticeAnswer();
-       /* if (userAnswer == null || (userAnswer is char c && c == default(char)) || (userAnswer is bool? b && !b.HasValue) || (userAnswer is string s && string.IsNullOrWhiteSpace(s)))
-        {
-            _practiceFeedback = "Please provide an answer.";
-            StateHasChanged();
-            return;
-        }  
-        */     
         _practiceFeedback = string.Empty;
         _isAnswerCorrect = _currentPracticeQuestion.Grade(userAnswer); 
-
-
+       
         if (_isAnswerCorrect)
         {
             _practiceFeedback = "Correct!";
+            _showHint = false;
+            _incorrectAttempts = 0;
         }
         else
         {
-                string correctAnswerDisplay = "";
+            _incorrectAttempts++;
+            string correctAnswerDisplay = "";
+            if (_incorrectAttempts == 1) // First incorrect attempt
+            {
+                _practiceFeedback = "Incorrect. Try again!";
+            } else {
                 switch (_currentPracticeQuestion.QuestionType)
                 {
                     case QuestionType.MultipleChoice:
@@ -532,8 +541,8 @@ else
                         correctAnswerDisplay = $" Correct: '{mcq.CorrectOption}' which is: {GetOptionText(mcq, mcq.CorrectOption)}";
                         break;
                     case QuestionType.TrueFalse:
-                        var tfq = (TrueFalseQuestion)_currentPracticeQuestion; // Casting
-                        correctAnswerDisplay = $" Correct: {tfq.CorrectAnswer}."; // Casting
+                        var tfq = (TrueFalseQuestion)_currentPracticeQuestion;
+                        correctAnswerDisplay = $" Correct: {tfq.CorrectAnswer}.";
                         break;
                     case QuestionType.TypeIn:
                         var tiq = (TypeInQuestion)_currentPracticeQuestion;
@@ -541,7 +550,9 @@ else
                         break;
                 }
                 _practiceFeedback = $"Incorrect.{correctAnswerDisplay}";
-            }    
+            }
+                _showHint = true;
+        }    
             _isAnswerChecked = true;
             StateHasChanged();
     }
@@ -562,6 +573,7 @@ else
         _practiceSelectedMcqOption = optionLetter;
         _practiceFeedback = string.Empty;
         _isAnswerChecked = false;
+        _showHint = false;
     }
 
     private void HandlePracticeTfSelection(bool value)
@@ -569,6 +581,7 @@ else
         _practiceSelectedTfOption = value;
         _practiceFeedback = string.Empty;
         _isAnswerChecked = false;
+        _showHint = false;
     }
 
     private void ClearPracticeUserAnswer()
@@ -602,7 +615,7 @@ else
 
     private void NavigateToSpecificStats()
     {
-        NavigationManager.NavigateTo($"/Stats/{value}"); // Added forceLoad: true here
+        NavigationManager.NavigateTo($"/Stats/{value}"); 
     }
-
+    
 }

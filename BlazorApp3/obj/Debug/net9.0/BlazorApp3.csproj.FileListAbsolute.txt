@@ -188,3 +188,4 @@
 /Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/bin/Debug/net9.0/zh-Hant/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 /Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/bin/Debug/net9.0/BCrypt.Net-Next.dll
 /Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/obj/Debug/net9.0/compressed/jtip2ietp6-3gz8zwdd6w.gz
+/Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/obj/Debug/net9.0/BlazorApp3.sourcelink.json

@@ -16,7 +16,7 @@
     <style>
         
         /* Main content card style (reusing .practice-container or .stats-container pattern) */
-        .admin-main-card {
+        .admin-main-card { 
             padding: 25px;
             border: 1px solid #cce0eb;
             border-radius: 10px;
@@ -28,9 +28,39 @@
         .btn-action {
             margin-bottom: 20px; /* More space below buttons in admin sections */
         }
+        .table-wrapper{
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 15px;
+            background-color: #fff;
+        }
+        .table-wrapper table thead th{
+            position:sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f0f0f0;
+        }
+        .admin-section{
+            margin-bottom: 25px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+        .question-management-section{
+            margin-top: 40px;
+            border-radius: 8px;
+            border: 1px solid #cce0eb;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            padding: 20px;
+        }
     </style>
     <div class="admin-main-card">
-    <div class="admin-panel-header">
+    <div class="main-card-header">
         <h3>Admin Panel</h3>
             <h4>Welcome Administrator</h4>
             <p>Here you can add new topics and questions to the database.</p>
@@ -75,36 +105,39 @@
             <h6>Existing Topics</h6>
             @if (_topics.Any())
             {
-                <table class="admin-table">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Information</th>
-                        <th>Theory</th>
-                        <th>Formulas</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var topic in _topics)
-                    {
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
                         <tr>
-                            <th>@topic.TopicId</th>
-                            <th>@topic.Title</th>
-                            <th>@topic.Information</th>
-                            <th>@topic.Theory</th>
-                            <th>@topic.Formulas</th>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Information</th>
+                            <th>Theory</th>
+                            <th>Formulas</th>
                         </tr>
-                    }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        @foreach (var topic in _topics)
+                        {
+                            <tr>
+                                <td>@topic.TopicId</td>
+                                <td>@topic.Title</td>
+                                <td>@topic.Information</td>
+                                <td>@topic.Theory</td>
+                                <td>@topic.Formulas</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
             }
             else
             {
                 <p>No topics found. Add one!</p>
             }
         </div>
-        <div class="admin-section">
+        
+        <div class="admin-section question-management-section">
             <h5>Manage Questions </h5>
             <button class="btn-action btn-success" @onclick="ShowAddQuestionForm">Add New Question</button>
             @if (_showQuestionForm)
@@ -146,6 +179,10 @@
                     <div class="form-group">
                         <label for = "qText">Question Text</label>
                         <textarea id ="qText" class="form-control" @bind = "_newQuestion.QuestionText"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for = "qHint">Question Hint</label>
+                        <textarea id ="qHint" class="form-control" @bind = "_newQuestion.QuestionHint"></textarea>
                     </div>
                     @switch (SelectedQuestionType)
                     {
@@ -197,8 +234,10 @@
                 </div>
             }
             <h6>Existing Questions</h6>
+           
             @if (_questions.Any())
             {
+                <div class="table-wrapper">
                 <table class="admin-table">
                     <thead>
                     <tr>
@@ -207,6 +246,7 @@
                         <th>Difficulty</th>
                         <th>Type</th>
                         <th>Question Text</th>
+                        <th>Hint</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -218,10 +258,16 @@
                             <td>@question.Difficulty</td>
                             <td>@question.QuestionType.ToString()</td>
                             <td>@question.QuestionText</td>
+                            <td>@question.QuestionHint</td>
                         </tr>
                     }
                     </tbody>
                 </table>
+            </div>
+            }
+            else
+            {
+                <p>No questions found. Add one using the form above!</p>
             }
         </div>
     </div>
@@ -394,7 +440,6 @@
 
         try
         {
-            _newQuestion.QuestionHint = null;
             await QuestionService.AddQuestionAsync(_newQuestion);
             _showQuestionForm = false; // Hide form
             await LoadQuestions(); // Refresh list
