@@ -1,0 +1,171 @@
+@page "/"
+@using BlazorApp3.Services
+@using BlazorApp3.Data
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+@inject UserSession UserSession
+
+<div class="content-wrapper">
+    <style>
+        
+        .login-card {
+            padding: 30px;
+            border: 1px solid #e0e0e0; /* Lighter border */
+            border-radius: 10px;
+            background-color: #fefefe; /* Near white */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .form-group {
+            max-width: 300px; /* Constrain width for a compact form */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-action {
+            margin-top: 20px; /* More space above the login button */
+        }
+        .btn-register {
+            background-color: #6c757d; /* A neutral grey */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            margin-top: 10px; /* Space from login button */
+        }
+        .btn-register:hover {
+            background-color: #5a6268;
+        }
+        .logged-in-status {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .logged-in-status p {
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .logged-in-status button {
+            margin-top: 15px; /* Space above logout/navigate buttons */
+        }
+        .password-input-group {
+            display: flex; /* Use flex to put input and button side-by-side */
+            align-items: center; /* Vertically align them */
+            gap: 5px; /* Small gap between input and button */
+        }
+        .password-input-group .form-control {
+            flex-grow: 1; /* Allow input to take most of the space */
+        }
+        .toggle-password-button {
+            background-color: #e0e0e0; /* Light grey button */
+            color: #333;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Smaller font for toggle button */
+            transition: background-color 0.2s ease;
+            white-space: nowrap; /* Prevent text from wrapping */
+        }
+        .toggle-password-button:hover {
+            background-color: #d0d0d0;
+        }
+    </style>
+    <div class="login-card">
+        <h1 class="main-card-header">Login</h1>
+        @if (!UserSession.isLoggedIn)
+        {
+            <div class="form-group">
+                <label for="username">Username: </label>
+                <input type="text" @bind="username" class="form-control"/>
+            </div>
+            <div class="form-group">
+                <label for="password">Password: </label>
+                <div class="password-input-group">
+                    <input type="@passwordInputType" id="password" @bind="password" class="form-control"/>
+                    <button type="button" class="toggle-password-button" @onclick="TogglePasswordVisibility">
+                        @(showPassword ? "Hide" : "Show")
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-action" @onclick="AttemptLogin">Login</button>
+
+            @if (loginFailed)
+            {
+                <div class="alert alert-danger">Login failed. Invalid username or password</div>
+            }
+            <p style="margin-top: 25px; color: #6c757d;">Don't have an account?</p>
+            <button class="btn-register" @onclick="NavigateToRegister">Create Account</button>
+        }
+        else
+        {
+            <div class="logged-in-status">
+                <h4>You are logged in!</h4>
+                <p>Logged in as: @UserSession.UserName</p>
+                <p>Admin Status: @(UserSession.IsAdmin ? "Administrator" : "Standard User")</p>
+                <button class="btn-action" @onclick="Logout">Logout</button>
+                <button class="btn-action btn-success" @onclick="TopicDirect">Go to Topics</button>
+            </div>
+        }
+    </div>
+</div>
+@code {
+    string username = "";
+    string password = "";
+    bool loginFailed = false;
+
+    User? loggedInUser = null;
+    
+    private bool showPassword = false;
+    private string passwordInputType = "password";
+
+    void TopicDirect()
+    {
+        NavigationManager.NavigateTo("/Topic");
+    }
+    void NavigateToRegister()
+    {
+        NavigationManager.NavigateTo("/Register");
+    }
+
+    async Task AttemptLogin()
+    {
+        loginFailed = false;
+        loggedInUser = await UserService.LoginUser(username, password);
+
+        if (loggedInUser != null)
+        {
+            UserSession.Login(loggedInUser.Id, loggedInUser.UserName, loggedInUser.IsAdmin);
+
+            password = ""; //Clears the field
+        }
+        else
+        {
+            loginFailed = true;
+            UserSession.clear();
+        }
+    }
+
+    void Logout()
+    {
+        //Logout Function for now, will be in settings menu
+        loggedInUser = null;
+        username = "";
+        password = "";
+        UserSession.clear();
+        NavigationManager.NavigateTo("/");
+    }
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? "text" : "password";
+    }
+    
+}

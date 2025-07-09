@@ -1,0 +1,554 @@
+@page "/TestTaking/{TopicId:int}/{Difficulty}/{Length:int}/{IsTimed:bool}/{DurationMinutes:int}"
+
+@using BlazorApp3.Services
+@using BlazorApp3.Data
+@using System.Timers
+
+@inject TopicService TopicService
+@inject QuestionService QuestionService
+@inject NavigationManager NavigationManager
+@inject TestResultService TestResultService
+
+@inject UserSession UserSession
+
+
+<div class="content-wrapper">
+    <div class="button-home-container">
+        <button class = "button-home" @onclick = "NavigateToTopic"> Home</button>
+    </div>
+    <style>
+        html, body {
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Inter', sans-serif; /* Consistent modern font */
+            background-color: #eef2f5; /* Light background for the whole page */
+        }
+        .content-wrapper {
+            margin: 20px auto; /* More margin from top/bottom, centered horizontally */
+            padding: 25px; /* Increased padding */
+            padding-bottom: 40px;
+            border: 1px solid #cce0eb; /* Softer border color */
+            border-radius: 12px; /* Slightly more rounded corners */
+            background-color: #ffffff; /* Clean white background */
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            flex-shrink: 1;
+            flex-basis: auto;
+            max-height: calc(100vh - 40px); /* Adjust max-height based on new margin */
+            overflow-y: auto; /* Allows scrolling within the wrapper if content overflows */
+            box-sizing: border-box;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* More pronounced, soft shadow */
+        }
+        .button-home-container {
+            text-align: right;
+            margin-bottom: 15px; /* Add some space below the home button */
+        }
+        .button-home {
+            background-color: #007bff; /* Primary blue */
+            color: white;
+            padding: 10px 20px; /* Slightly more horizontal padding */
+            border: none;
+            border-radius: 25px; /* Pill-shaped button */
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600; /* Slightly bolder font */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Smooth transitions */
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Subtle shadow */
+            letter-spacing: 0.5px; /* Slightly spaced text */
+        }
+        .button-home:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            transform: translateY(-2px); /* Lift effect on hover */
+            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3); /* Enhanced shadow on hover */
+        }
+        .practice-container {
+            padding: 25px; /* Increased padding */
+            border: 1px solid #cce0eb; /* Softer border */
+            border-radius: 10px; /* Slightly more rounded */
+            margin-top: 20px;
+            margin-bottom: 15px; /* More consistent spacing */
+            background-color: #fdfdfd; /* Very light background for inner containers */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Soft shadow for depth */
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 20px; /* Space below the header block */
+            padding-bottom: 15px; /* Add padding to the bottom of the header */
+            border-bottom: 1px solid #e0e0e0; /* Separator line */
+            }
+
+        .test-header h3 {
+            font-size: 2em; /* Larger title for the test header */
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px; /* Space below title in header */
+        }
+
+        .test-header p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .question-text {
+            font-size: 1.6em; /* Slightly larger question text */
+            font-weight: 600; /* Slightly less bold, more readable */
+            margin-bottom: 20px; /* More space below question */
+            color: #2c3e50; /* Darker, more prominent text */
+            line-height: 1.7; /* Improved readability */
+        }
+
+        .question-hint {
+            font-style: italic;
+            color: #7f8c8d; /* Muted color */
+            margin-top: 15px;
+            border-top: 1px dashed #e0e0e0; /* Lighter dashed line */
+            padding-top: 15px;
+            font-size: 0.95em;
+        }
+
+        .options-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px; /* Increased spacing between options */
+            cursor: pointer;
+            font-size: 1.15em; /* Slightly larger font for options */
+            padding: 15px 20px; /* Increased padding for larger touch target */
+            border: 1px solid #dbe9f4; /* Softer border */
+            border-radius: 10px; /* More rounded corners */
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+            background-color: #fefefe; /* Very light background */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); /* Subtle shadow */
+        }
+
+        .options-group label:hover {
+            background-color: #e6f2ff; /* Lighter blue on hover */
+            border-color: #99ccff; /* More distinct border on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Enhanced shadow on hover */
+        }
+
+        .options-group input[type="radio"],
+        .options-group input[type="checkbox"] {
+            margin-right: 20px; /* More space between input and text */
+            transform: scale(1.3); /* Slightly reduced scale from 1.5, for better balance */
+            /* Custom styling for radio/checkbox for modern look */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 24px; /* Size of the custom checkbox/radio */
+            height: 24px;
+            border: 2px solid #007bff; /* Blue border */
+            border-radius: 50%; /* Make it round for radio, square for checkbox */
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .options-group input[type="checkbox"] {
+            border-radius: 6px; /* Square for checkbox */
+        }
+
+        .options-group input[type="radio"]::before,
+        .options-group input[type="checkbox"]::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background-color: #007bff; /* Blue fill */
+            border-radius: 50%; /* Round for radio */
+            transform: scale(0); /* Hidden by default */
+            transition: transform 0.2s ease;
+        }
+
+        .options-group input[type="checkbox"]::before {
+            border-radius: 3px; /* Square for checkbox */
+        }
+
+        .options-group input[type="radio"]:checked,
+        .options-group input[type="checkbox"]:checked {
+            background-color: #e6f2ff; /* Light blue background when checked */
+            border-color: #0056b3; /* Darker blue border when checked */
+        }
+
+        .options-group input[type="radio"]:checked::before,
+        .options-group input[type="checkbox"]:checked::before {
+            transform: scale(1); /* Show inner circle/square when checked */
+        }
+
+        .options-group input[type="radio"]:disabled,
+        .options-group input[type="checkbox"]:disabled,
+        .typein-input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background-color: #e9ecef;
+            border-color: #ced4da;
+        }
+
+        .practice-feedback {
+            padding: 18px; /* Increased padding */
+            border-radius: 10px; /* More rounded */
+            margin-top: 25px; /* More space */
+            font-weight: 700; /* Bolder */
+            text-align: center;
+            font-size: 1.1em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+        }
+
+        .feedback-correct {
+            background-color: #e6ffe6; /* Light green */
+            color: #1a6d00; /* Darker green */
+            border: 1px solid #a3e6a3;
+        }
+
+        .feedback-incorrect {
+            background-color: #ffe6e6; /* Light red */
+            color: #b30000; /* Darker red */
+            border: 1px solid #e6a3a3;
+        }
+
+        /* Action Buttons (General) - Copied from Shapes.razor */
+        .btn-action {
+            background-color: #007bff; /* Primary blue */
+            color: white;
+            padding: 12px 25px; /* Larger padding for prominence */
+            border: none;
+            border-radius: 8px; /* Consistent rounded corners */
+            cursor: pointer;
+            font-size: 17px; /* Slightly larger font */
+            font-weight: 600; /* Bolder font */
+            margin-top: 20px; /* More space above buttons */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Subtle shadow */
+            letter-spacing: 0.5px;
+        }
+
+        .btn-action:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        /* Next Button (Specific color) */
+        .btn-next {
+            background-color: #28a745;
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+        }
+        .btn-next:hover {
+            background-color: #218838;
+            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+        }
+        .typein-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1.1em;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .typein-input:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+    </style>
+    @if (_test == null || _test.Questions == null)
+    {
+        <p> Loading test or no questions found</p>
+        @if(!String.IsNullOrEmpty(_errorMessage))
+        {
+            <p class = "feedback-incorrect">Error: @_errorMessage </p>
+        }
+    }
+    else if (_test.IsCompleted){
+    <div class="practice-container">
+        <h3>Test Completed!</h3>
+        <p class = "question-text"> You scored: @_test.CorrectAnswerCount out of @_test.NumberOfQuestions!</p>
+        <p class = "question-text"> Percentage: @_test.CalculateScorePercentage().ToString("F2")%</p>
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn-action" @onclick="NavigateToTopic">Back to Topic</button>
+        </div>
+    </div>
+    }
+    else
+    { 
+        <div class="test-header practice-container">
+            <h3 style = "margin-bottom: 10px;"> Test: @_currentTopicTitle </h3>
+            <p class="question-text" style="font-size:1.1em; margin-bottom:5px;">Question @(_currentQuestionIndex+1) / @_test.NumberOfQuestions  </p>
+            @if (_test.IsTimed)
+            {
+
+                <p class ="question-text" style = "font-size: 1.1em;"> Time Left: @(_remainingTime.Minutes.ToString("D2")):@(_remainingTime.Seconds.ToString("D2"))
+                </p>
+            }
+        </div>
+        <div class="practice-container" style="margin-top:10px;">
+            <div class="question-text">
+                @_test.Questions[_currentQuestionIndex].QuestionText
+            </div>
+            
+            @switch (_test.Questions[_currentQuestionIndex].QuestionType)
+            {
+                        case QuestionType.MultipleChoice:
+                            var mcq = (MultipleChoiceQuestion)_test.Questions[_currentQuestionIndex];
+                            <div class="options-group">
+                                @for (int i = 0; i < mcq.ShuffledOptions.Count; i++)
+                                {
+                                    var optionLetter = (char)('A' + i);
+                                    <label class="options-group label"> 
+                                    <input type="radio" name="testOptions_@_test.Questions[_currentQuestionIndex].QuestionId" value="@optionLetter"
+                                           @onchange="@(e => HandleMcqSelection(optionLetter))"
+                                           checked="@(_currentMcqAnswer == optionLetter)" /> 
+                                     @mcq.ShuffledOptions[i]
+                                     </label>
+                                }
+                            </div>
+                            break;
+                        case QuestionType.TrueFalse:
+                            <div class="options-group">
+                                <label class="options-group label">
+                                <input type="radio" name="testTfOptions_@_test.Questions[_currentQuestionIndex].QuestionId" value="True" @onchange="@(e => HandleTfSelection(true))"
+                                       checked="@(_currentTfAnswer == true)" /> 
+                                True
+                                 </label>
+                            <label class="options-group label">
+                                <input type="radio" name="testTfOptions_@_test.Questions[_currentQuestionIndex].QuestionId" value="False" @onchange="@(e => HandleTfSelection(false))"
+                                       checked="@(_currentTfAnswer == false)" /> 
+                                False
+                            </label>
+                          </div> 
+                            break;
+
+                        case QuestionType.TypeIn:
+                            <input type="text" @bind-value="_currentTypeInAnswer" @bind-value:event="oninput" class="typein-input" placeholder="Type your answer here..." /> 
+                            break;
+                    }
+            
+            <div class="practice-controls">
+                @if (_currentQuestionIndex < _test.NumberOfQuestions - 1)
+                {
+                    <button class = "btn-action btn-next" @onclick ="NextQuestion"> Next Question </button>
+                }
+                else
+                {
+                    <button class = "btn-action" @onclick="SubmitTest"> Submit Test</button>
+                }
+
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int TopicId { get; set; }
+    [Parameter]
+    public string Difficulty { get; set; } = "Any";
+    [Parameter]
+    public int Length { get; set; }
+    [Parameter]
+    public bool IsTimed { get; set; }
+    [Parameter]
+    public int DurationMinutes { get; set; }
+    
+    
+
+    private Test _test;
+    private string _currentTopicTitle = "Test";
+    private int _currentQuestionIndex = 0;
+    private string _errorMessage = "";
+
+    private char _currentMcqAnswer;
+    private bool? _currentTfAnswer;
+    private string _currentTypeInAnswer;
+    
+    private Dictionary<int, object> _userAnswers = new Dictionary<int, object>();
+
+    private System.Timers.Timer _timer; // The timer object
+    private TimeSpan _remainingTime; // The time left for the test
+
+    
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var topic = await TopicService.GetTopicByIdAsync(TopicId);
+        _currentTopicTitle = topic?.Title ?? "Unknown topic"; //To handle null error
+
+        try
+        {
+            var questions = await QuestionService.GetQuestionsForTest(TopicId, Difficulty, Length);
+            if (questions == null || !questions.Any())
+            {
+                _errorMessage = "The questions could not be loaded. Try again later.";
+                return;
+            }
+
+            _test = new Test(TopicId, Difficulty, Length, IsTimed, DurationMinutes, questions);
+
+            foreach (var question in _test.Questions) //Each question of the text has a placeholder in the dictionary
+            {
+                _userAnswers[question.QuestionId] = null;
+            }
+
+            if (IsTimed)
+            {
+                _remainingTime = TimeSpan.FromMinutes(DurationMinutes);
+                _timer = new Timer(1000); //Every 1s
+
+                _timer.Elapsed += async (sender, e) => await InvokeAsync(TimerElapsed);
+                _timer.AutoReset = true; // Ensures the timer keeps firing repeatedly after each interval.
+                _timer.Start(); // Start the countdown.
+            }
+
+            LoadCurrentQuestionAnswer();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"An error occurred while loading the test: {ex.Message}";
+
+        }
+    }
+
+    public void Dispose() // Memory saving,
+    {
+        if (_timer != null)
+        {
+            _timer.Stop();
+            _timer.Dispose();
+        }
+    }
+
+    private async Task TimerElapsed()
+    {
+        _remainingTime = _remainingTime.Subtract(TimeSpan.FromSeconds(1));
+
+        if (_remainingTime <= TimeSpan.Zero)
+        {
+            _remainingTime = TimeSpan.Zero;
+            await SubmitTest();
+        }
+        StateHasChanged();
+    }
+
+    private void HandleMcqSelection(char optionLetter)
+    {
+        _currentMcqAnswer = optionLetter;
+        _userAnswers[_test.Questions[_currentQuestionIndex].QuestionId] = optionLetter;
+    }
+
+    private void HandleTfSelection(bool value)
+    {
+        _currentTfAnswer = value;
+        _userAnswers[_test.Questions[_currentQuestionIndex].QuestionId] = value;
+    }
+    private void HandleTypeInAnswer(ChangeEventArgs e)
+    {
+        _currentTypeInAnswer = e.Value?.ToString(); 
+        
+        _userAnswers[_test.Questions[_currentQuestionIndex].QuestionId] = _currentTypeInAnswer;
+    }
+
+    private void NextQuestion()
+    {
+        _currentQuestionIndex++;
+        ClearCurrentQuestionAnswerInputs();
+        LoadCurrentQuestionAnswer();
+        
+        StateHasChanged();
+    }
+
+    private void LoadCurrentQuestionAnswer()
+    {
+        var currentQuestion = _test.Questions[_currentQuestionIndex];
+        if(_userAnswers.TryGetValue(currentQuestion.QuestionId, out object savedAnswer))
+        {
+            switch (currentQuestion.QuestionType)
+            { 
+                case QuestionType.MultipleChoice:
+                _currentMcqAnswer = savedAnswer is char ? (char)savedAnswer : default(char);
+                break; 
+                case QuestionType.TrueFalse: 
+                _currentTfAnswer = savedAnswer is bool ? (bool)savedAnswer : (bool?)null; 
+                break;
+                case QuestionType.TypeIn:
+                _currentTypeInAnswer = savedAnswer is string ? (string)savedAnswer : string.Empty;
+                break;
+            }
+        }
+    }
+
+    private void ClearCurrentQuestionAnswerInputs()
+    {
+        _currentMcqAnswer = default(char);
+        _currentTfAnswer = null;
+        _currentTypeInAnswer = string.Empty;
+    }
+
+    private async Task SubmitTest()
+    {
+        if (_test.IsCompleted) return;
+        _timer?.Stop();
+        _timer?.Dispose();
+
+        _test.EndTime = DateTime.UtcNow;
+        _test.IsCompleted = true;
+        
+
+        _test.CorrectAnswerCount = 0;
+        _test.TotalQuestionsAttempt = 0;
+
+        foreach (var question in _test.Questions)
+        {
+            if (_userAnswers.TryGetValue(question.QuestionId, out object userAnswer))
+            {
+                _test.TotalQuestionsAttempt++;
+                
+                if (question.Grade(userAnswer))
+                {
+                    _test.CorrectAnswerCount++; // Increment correct answers if the question was graded true.
+                }
+            }
+
+        }
+
+        int currentUserId = (int)UserSession.UserId;
+        TestResult testResult = null;
+        if (currentUserId != 0)
+        {
+            testResult = new TestResult(
+                userId: currentUserId,
+                topicId: _test.TopicId,
+                topicTitle: _currentTopicTitle,
+                difficulty: _test.Difficulty,
+                numberOfQuestions: _test.NumberOfQuestions,
+                numberOfCorrectAnswers: _test.CorrectAnswerCount,
+                numberOfQuestionsAttempted: _test.TotalQuestionsAttempt,
+                testEndTime: _test.EndTime.Value
+            );
+        }
+        try
+        {
+            await TestResultService.SaveTestResult(testResult);
+        }
+        catch (Exception ex)
+        {
+            //Error while saving.
+        }
+        StateHasChanged();
+    }
+
+    public void NavigateToTopic()
+    {
+        NavigationManager.NavigateTo("/Topic");
+    }
+}

@@ -1,0 +1,134 @@
+@page "/Settings"
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@using Org.BouncyCastle.Tls
+@inject UserSession UserSession
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+
+<div class="content-wrapper">
+    <div class="button-home-container">
+        <button class="button-home" @onclick="NavigateToTopic">Home</button>
+    </div>
+    <style>
+        
+        .settings-main-card {
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background-color: #fefefe;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .settings-main-card p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center; /* Center the buttons horizontally */
+            gap: 15px; /* Space between buttons */
+            margin-top: 20px;
+        }
+        .delete-prompt {
+            color: #dc3545; /* Red for warning */
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .warning-message { /* Specific style for the deletion warning */
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 600;
+            background-color: #fff3cd; /* Light yellow */
+            color: #856404; /* Darker yellow */
+            border: 1px solid #ffeeba;
+        }
+        
+    </style>
+    @if (UserSession.isLoggedIn)
+    {
+        <div class="settings-main-card">
+            <h3 class="main-card-header">Settings</h3>
+            <p>Welcome @UserSession.UserName!</p>
+            <p>Here you can manage your account settings.</p>
+
+            <div class="button-group">
+                <button class="btn-action" @onclick="Logout">Logout</button>
+
+                @if (!_showConfirmationButtons)
+                {
+                    <button class="btn-action btn-danger" @onclick="ShowDeleteConfirmation">Delete Your Account</button>
+                }
+                else
+                {
+                    <button class="btn-action btn-danger" @onclick="ConfirmDeleteUser">Confirm Delete</button>
+                    <button class="btn-action" @onclick="CancelDeleteConfirmation">Cancel</button>
+                }
+            </div>
+
+            @if (_showConfirmationButtons)
+            {
+                <p class="delete-prompt">
+                    We're sad to see you go! Press 'Confirm Delete' to finalize. This action cannot be undone.
+                </p>
+            }
+        </div>
+    }
+    else
+    {
+        NavigationManager.NavigateTo("/Login", true);
+    }
+</div>
+
+@code {
+    private bool _showConfirmationButtons = false;
+
+    async Task Logout()
+    {
+        //Logout Function for now, will be in settings menu
+        UserSession.clear();
+        _showConfirmationButtons = false;
+        await Task.Delay(2000);
+        NavigationManager.NavigateTo("/");
+    }
+    private void ShowDeleteConfirmation()
+    {
+        _showConfirmationButtons = true;
+    }
+
+    private async Task ConfirmDeleteUser()
+    {
+        _showConfirmationButtons = false;
+        try
+        {
+            await UserService.DeleteUserByUsername(UserSession.UserName); // Log success
+            UserSession.clear();
+            await Task.Delay(500); // Small delay to allow user to register console message (if dev tools open)
+            NavigationManager.NavigateTo("/", true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error" + ex);
+        }
+    }
+    private void CancelDeleteConfirmation()
+    {
+        _showConfirmationButtons = false;
+    }
+
+    public void NavigateToTopic()
+    {
+        _showConfirmationButtons = false;
+        NavigationManager.NavigateTo("/Topic");
+        
+    }
+    
+
+}

@@ -1,0 +1,608 @@
+@page "/Shapes/{value:int}"
+@using System.Text.RegularExpressions
+@using BlazorApp3.Services
+@using BlazorApp3.Data
+@inject TopicService TopicService
+@inject UserSession UserSession
+@inject NavigationManager NavigationManager
+@inject QuestionService QuestionService
+
+<div class = "content-wrapper">
+<div class="button-home-container">
+    <button class="button-home" @onclick="NavigateToTopic">Home</button>
+</div>
+<style>
+    
+    .Title{
+        font-size: 1.5rem;
+        text-decoration: underline; /* Use text-decoration for underline */
+        margin-top:0px;
+        margin-bottom: 0px;
+        text-align: center; /* Center the title */
+        color: #333; /* Consistent color */
+        font-weight: 700; /* Consistent font weight */
+    }
+    .Tab-buttons{
+        margin-top:0px;
+        display: flex;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ddd;
+    }
+    .Tab-buttons button{
+        flex:1;
+        padding: 12px 20px;
+        background-color:#f0f0f0;
+        border:none;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        cursor:pointer;
+        font-size: 1em; 
+        font-weight: 600; 
+        color: #555; 
+        transition: background-color 0.2s ease;
+    }
+    .Tab-buttons button:hover {
+        background-color: #e0e0e0;
+    }
+    .Tab-buttons button.selected-tab {
+        background-color: white;
+        color:#333;
+
+        border-top: 2px solid #007bff;
+        border-left: 1px solid #ddd; 
+        border-right: 1px solid #ddd;
+        border-bottom: none;
+        font-weight: bold;
+        position: relative; /* For z-index to overlap bottom border */
+        z-index: 1;
+    }
+    .Tab-content{
+        padding:10px;
+        border: 1px solid black;
+        border-radius: 8px;
+        overflow-y: auto;
+        padding-bottom: 4px;
+        margin-bottom:  10px;
+        min-height: 0;
+        flex-grow: 1;
+        background-color: #fdfdfd;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+    .Tab-content p {
+        white-space: pre-wrap; /* Preserves whitespace and wraps text */
+        margin-bottom: 1em; /* Add some spacing between paragraphs */
+        color: #444;
+        line-height: 1.6;
+    }
+    .practice-container {
+        padding: 25px; /*  padding */
+        border: 1px solid #cce0eb; /* Softer border */
+        border-radius: 10px; /* Slightly more rounded */
+        margin-top: 20px;
+        margin-bottom: 15px; /* More consistent spacing */
+        background-color: #fdfdfd; /* Very light background for inner containers */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Soft shadow for depth */
+    }
+    .question-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #222;
+            line-height: 1.6;
+    }
+    .question-hint {
+        font-style: italic;
+        color: #555;
+        margin-top: 10px;
+        border-top: 1px dashed #ddd;
+        padding-top: 10px;
+    }
+    .options-group label {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px; /* Increased spacing between options */
+        cursor: pointer;
+        font-size: 1.15em; /* Slightly larger font for options */
+        padding: 15px 20px; /* Increased padding for larger touch target */
+        border: 1px solid #dbe9f4; /* Softer border */
+        border-radius: 10px; /* More rounded corners */
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+        background-color: #fefefe; /* Very light background */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04); /* Subtle shadow */
+    }
+    .options-group label:hover {
+        background-color: #e6f2ff; /* Lighter blue on hover */
+        border-color: #99ccff; /* More distinct border on hover */
+        transform: translateY(-2px); /* Slight lift effect */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Enhanced shadow on hover */
+    }
+
+    .options-group input[type="radio"],
+    .options-group input[type="checkbox"] {
+        margin-right: 20px; /* More space between input and text */
+        transform: scale(1.3); /* Slightly reduced scale from 1.5, for better balance */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 24px; /* Size of the custom checkbox/radio */
+        height: 24px;
+        border: 2px solid #007bff; /* Blue border */
+        border-radius: 50%; /* Make it round for radio, square for checkbox */
+        outline: none;
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .options-group input[type="checkbox"] {
+        border-radius: 6px; /* square for checkbox */
+    }
+
+    .options-group input[type="radio"]::before,
+    .options-group input[type="checkbox"]::before {
+        content: '';
+        width: 12px;
+        height: 12px;
+        background-color: #007bff; /* Blue fill */
+        border-radius: 50%; /* Round for radio */
+        transform: scale(0); /* Hidden by default */
+        transition: transform 0.2s ease;
+    }
+    .options-group input[type="checkbox"]::before {
+        border-radius: 3px; /* Square for checkbox */
+    }
+    .options-group input[type="radio"]:checked,
+    .options-group input[type="checkbox"]:checked {
+        background-color: #e6f2ff; /* Light blue background when checked */
+        border-color: #0056b3; /* Darker blue border when checked */
+    }
+    .options-group input[type="radio"]:checked::before,
+    .options-group input[type="checkbox"]:checked::before {
+        transform: scale(1); /* Show inner circle/square when checked */
+    }
+    .options-group input[type="radio"]:disabled,
+    .options-group input[type="checkbox"]:disabled,
+    .form-control:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        background-color: #e9ecef;
+        border-color: #ced4da;
+    }
+    .btn-action{
+        margin-top:15px;
+    }
+    .btn-next{
+        background-color: #28a745;
+    }
+
+    .btn-next:hover{
+        background-color: #218838;
+    }
+
+    .test-config-item {
+        margin-bottom: 25px;
+    }
+    .practice-container h3 {
+        font-size: 1.8em;
+        color: #333;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+    .loading-message, .error-message {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 1.1em;
+        color: #555;
+    }
+    .error-message {
+        color: #dc3545;
+    }
+    
+</style>
+
+@if (!UserSession.isLoggedIn)
+{
+    <p class="alert alert-danger"> Sorry! only logged in users can access topic selection <br/> Redirecting to login.</p>
+    
+}else if(_currentTopic == null){
+    
+<p>Loading topic...</p>
+}
+else
+{
+    <p class="Title"> @_currentTopic.Title </p>
+    <br/>
+    <div class="Tab-buttons">
+        <button class = "@GetTabClass("Theory")" @onclick ="ShowTheory" > Theory</button>
+        <button class = "@GetTabClass("Practice")" @onclick ="ShowPractice" > Practice</button>
+        <button class = "@GetTabClass("Test")" @onclick ="ShowTest" > Test</button>
+        <button class = "@GetTabClass("Stats")" @onclick ="ShowStats" > Statistics</button>
+    </div>
+    <div class="Tab-content">
+        @switch (_selectedTab)
+        {
+            case "Theory":
+                <p> @_currentTopic.Information</p>
+                <p> @_currentTopic.Theory</p>
+                <p>@RemoveHtmlTags(_currentTopic.Formulas)</p> 
+                break;
+                
+            case "Practice":
+                @if (_practiceLoading)
+                {
+                    <p>Loading practice question...</p>
+                }
+                else if (_currentPracticeQuestion == null) @* Check if null after loading completes *@
+                {
+                    <p class="loading-message">No questions found for this topic/difficulty.</p>
+                    @if (_practiceErrorMessage != null) { <p class="error-message">Detail: @_practiceErrorMessage</p> }
+                    
+                    <button class="btn-action" @onclick="LoadRandomPracticeQuestion">Get Question</button>
+                } else // Display question if loaded
+                {
+                    <div class="practice-container">
+                        <div class="question-text">
+                            @_currentPracticeQuestion.QuestionText
+                            
+                        </div>
+                    </div>
+                    @switch (_currentPracticeQuestion.QuestionType)
+                    {
+                        case QuestionType.MultipleChoice:
+                            var mcq = (MultipleChoiceQuestion)_currentPracticeQuestion;
+                            <div class="options-group">
+                                @for (int i = 0; i < mcq.ShuffledOptions.Count; i++)
+                                {
+                                    var optionLetter = (char)('A' + i);
+                                    <label>
+                                        <input type="radio" name="practiceOptions" value="@optionLetter"
+                                               @onchange="@(e => HandlePracticeMcqSelection(optionLetter))"
+                                               checked="@(_practiceSelectedMcqOption == optionLetter && !_isAnswerChecked)"
+                                               disabled="@(_isAnswerChecked)" />
+                                        @mcq.ShuffledOptions[i]
+                                    </label>
+                                }
+                            </div>
+                            @if (_isAnswerChecked)
+                            {
+                                <div class="feedback-message @( _isAnswerCorrect ? "feedback-correct" : "feedback-incorrect")">
+                                    @_practiceFeedback
+                                </div>
+                            }
+                            break;
+                        case QuestionType.TrueFalse:
+                            <div class="options-group">
+                                <label>
+                                    <input type="radio" name="practiceTfOptions" value="True" @onchange="@(e => HandlePracticeTfSelection(true))"
+                                           checked="@(_practiceSelectedTfOption == true && !_isAnswerChecked)" disabled="@(_isAnswerChecked)"/> True
+                                </label>
+                                <label>
+                                    <input type="radio" name="practiceTfOptions" value="False" @onchange="@(e => HandlePracticeTfSelection(false))"
+                                           checked="@(_practiceSelectedTfOption == false && !_isAnswerChecked)" disabled="@(_isAnswerChecked)"/> False
+                                </label>
+                            </div>
+                            @if (_isAnswerChecked) // Display feedback after checking
+                            {
+                                <div class="feedback-message @( _isAnswerCorrect ? "feedback-correct" : "feedback-incorrect")">
+                                    @_practiceFeedback
+                                </div>
+                            }
+                            break;
+
+                        case QuestionType.TypeIn:
+                            <input type="text" @bind-value="_practiceTypedInAnswer" @bind-value:event="oninput" class="form-control" placeholder="Type your answer here..." disabled="@(_isAnswerChecked)"/>
+                            @if (_isAnswerChecked) // Display feedback after checking
+                            {
+                                <div class="feedback-message @( _isAnswerCorrect ? "feedback-correct" : "feedback-incorrect")">
+                                    @_practiceFeedback
+                                </div>
+                            }
+                            break;
+                    }
+                    
+                    <div class="practice-controls">
+                        @if (!_isAnswerChecked)
+                        {
+                            <button class="btn-action" @onclick = "CheckPracticeQuestion">Check Answer</button>
+                        }
+                        else
+                        {
+                            <button class="btn-action btn-next" @onclick="LoadRandomPracticeQuestion">Next Question</button>
+                        }
+                    </div>
+                }
+                break;
+                
+            case "Test":
+                <div class = "practice-container">
+                    <h3>Create Your Test!</h3>
+                    <div class = "test-config-item">
+                <p class="question-text" style="font-size:1.2em; margin-bottom:10px;"> First, select your desired difficulty!</p>                
+                <select class="form-control" @bind="_selectedDifficulty">
+                    <option value="Any">Any</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+                </div>
+                    <div class = "test-config-item">
+                        <p class="question-text" style="font-size:1.2em; margin-bottom:10px;"> Now, select your desired number of questions!</p>
+                        <select class="form-control" @bind = "_selectedLenght">
+                            <option value="5">5 Questions</option>
+                            <option value="10">10 Questions</option>
+                            <option value="15">15 Questions</option>
+                            <option value="20">20 Questions</option>
+                            <option value="30">30 Questions</option>
+                        </select>
+                    </div>
+                    <div class="test-config-item">
+                        <p class="question-text" style="font-size:1.2em; margin-bottom:10px;"> Do you want a timed test?</p>
+                            <label class="options-group">
+                                <input type="checkbox" style="margin-bottom: 10px;" @bind="_isTimed"/>
+                                Yes, make it a timed test
+                                </label>
+                    </div>
+                @if (_isTimed)
+                { 
+                    <div class="test-config-item">
+                        <p class="question-text" style="font-size:1.2em; margin-bottom:10px;">Enter test duration in minutes:</p>
+                        <input type="number" class="form-control" @bind="_testDuration" min="1" />
+                    </div>
+                }
+                    <div style="text-align: center; margin-top: 30px;"> 
+                        <button class="btn-action" @onclick="StartTest">Start Test</button>
+                    </div>
+                </div>
+                break;
+                
+            case "Stats":
+                <div class="practice-container"> 
+                    <h3>Topic Statistics</h3>
+                    <p>View detailed statistics for this topic.</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn-action" @onclick="NavigateToSpecificStats">View Statistics</button>
+                    </div>
+                </div>
+                break;
+        }
+    </div>
+}
+</div>
+
+@code {
+    
+    [Parameter] 
+    public int value { get; set; }
+    Topic _currentTopic;
+    String _selectedTab = "Theory";
+
+    private Question _currentPracticeQuestion;
+
+    bool _practiceLoading = true;
+    bool _isAnswerChecked = false;
+    bool _isAnswerCorrect = false;
+
+
+    private char _practiceSelectedMcqOption;
+    private bool? _practiceSelectedTfOption;
+    private string _practiceTypedInAnswer;
+    private string _practiceFeedback;
+    private string _practiceErrorMessage;
+
+    private string _selectedDifficulty = "Any";
+    private int _selectedLenght = 5;
+    private bool _isTimed = false;
+    private int _testDuration = 15;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!UserSession.isLoggedIn)
+        {
+            NavigationManager.NavigateTo("/login", true);
+            return;
+        }
+
+        _currentTopic = await TopicService.GetTopicByIdAsync(value);
+
+    }
+
+    private void HandleDifficultyChange(ChangeEventArgs e)
+    {
+        _selectedDifficulty = e.Value.ToString();
+    }
+
+    private void HandleLengthChange(ChangeEventArgs e)
+    {
+        _selectedLenght = int.Parse(e.Value.ToString());
+    }
+
+    private void HandleDurationChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value.ToString(), out int duration))
+        {
+            _testDuration = duration;
+        }
+    }
+    private void StartTest()
+        {
+            NavigationManager.NavigateTo($"/TestTaking/{value}/{_selectedDifficulty}/{_selectedLenght}/{_isTimed}/{_testDuration}");
+        }
+
+    private void SetSelectedTab(string tabName)
+    {
+        _selectedTab = tabName;
+    }
+
+    private void ShowTheory()
+    {
+        SetSelectedTab("Theory");
+    }
+
+    private async Task ShowPractice()
+    {
+        SetSelectedTab("Practice");
+        await LoadRandomPracticeQuestion();
+
+    }
+
+    private void ShowTest()
+    {
+        SetSelectedTab("Test");
+    }
+
+    private void ShowStats()
+    {
+        SetSelectedTab("Stats");
+    }
+
+    private string GetTabClass(string tabToCheck)
+    {
+        return tabToCheck == _selectedTab ? "selected-tab" : "";
+    }
+    
+
+    private async Task LoadRandomPracticeQuestion()
+    {
+        if (_currentTopic == null)
+        {
+            _practiceErrorMessage = "Topic missing.";
+            StateHasChanged(); // Ensure UI updates on error
+            return;
+        }
+        
+        _practiceLoading = true;
+        _practiceErrorMessage = null;
+
+        _isAnswerChecked = false;
+        _isAnswerCorrect = false;
+        ClearPracticeUserAnswer();
+
+        try
+        {
+            _currentPracticeQuestion = await QuestionService.GetRandomQuestion(_currentTopic.TopicId); // Use "Easy" or "Medium" based on available data
+
+            if (_currentPracticeQuestion == null)
+            {
+                _practiceErrorMessage = "No questions for this topic/difficulty.";
+            }
+            // Randomization for MultipleChoiceQuestion happens inside QuestionService
+        }
+        finally
+        {
+            _practiceLoading = false;
+            StateHasChanged(); // Essential for UI to reflect loading, errors, or question display
+        }
+    }
+
+
+    private void CheckPracticeQuestion()
+    {
+        if (_currentPracticeQuestion == null)
+        {
+            _practiceFeedback = "No question to check.";
+            StateHasChanged();
+            return;
+        }
+
+        object userAnswer = GetCurrentPracticeAnswer();
+       /* if (userAnswer == null || (userAnswer is char c && c == default(char)) || (userAnswer is bool? b && !b.HasValue) || (userAnswer is string s && string.IsNullOrWhiteSpace(s)))
+        {
+            _practiceFeedback = "Please provide an answer.";
+            StateHasChanged();
+            return;
+        }  
+        */     
+        _practiceFeedback = string.Empty;
+        _isAnswerCorrect = _currentPracticeQuestion.Grade(userAnswer); 
+
+
+        if (_isAnswerCorrect)
+        {
+            _practiceFeedback = "Correct!";
+        }
+        else
+        {
+                string correctAnswerDisplay = "";
+                switch (_currentPracticeQuestion.QuestionType)
+                {
+                    case QuestionType.MultipleChoice:
+                        var mcq = (MultipleChoiceQuestion)_currentPracticeQuestion;
+                        correctAnswerDisplay = $" Correct: '{mcq.CorrectOption}' which is: {GetOptionText(mcq, mcq.CorrectOption)}";
+                        break;
+                    case QuestionType.TrueFalse:
+                        var tfq = (TrueFalseQuestion)_currentPracticeQuestion; // Casting
+                        correctAnswerDisplay = $" Correct: {tfq.CorrectAnswer}."; // Casting
+                        break;
+                    case QuestionType.TypeIn:
+                        var tiq = (TypeInQuestion)_currentPracticeQuestion;
+                        correctAnswerDisplay = $" Correct: '{tiq.CorrectAnswerText}'.";
+                        break;
+                }
+                _practiceFeedback = $"Incorrect.{correctAnswerDisplay}";
+            }    
+            _isAnswerChecked = true;
+            StateHasChanged();
+    }
+
+        private object GetCurrentPracticeAnswer()
+        {
+            return _currentPracticeQuestion.QuestionType switch
+            {
+                QuestionType.MultipleChoice => _practiceSelectedMcqOption,
+                QuestionType.TrueFalse => _practiceSelectedTfOption,
+                QuestionType.TypeIn => _practiceTypedInAnswer,
+                _ => null,
+            };
+        }
+
+    private void HandlePracticeMcqSelection(char optionLetter)
+    {
+        _practiceSelectedMcqOption = optionLetter;
+        _practiceFeedback = string.Empty;
+        _isAnswerChecked = false;
+    }
+
+    private void HandlePracticeTfSelection(bool value)
+    {
+        _practiceSelectedTfOption = value;
+        _practiceFeedback = string.Empty;
+        _isAnswerChecked = false;
+    }
+
+    private void ClearPracticeUserAnswer()
+    {
+        _practiceSelectedMcqOption = default(char);
+        _practiceSelectedTfOption = null;
+        _practiceTypedInAnswer = string.Empty;
+    }
+
+    private string GetOptionText(MultipleChoiceQuestion mcq, char optionLetter)
+    {
+        int index = char.ToUpper(optionLetter) - 'A';
+        if (index >= 0 && index < mcq.ShuffledOptions.Count)
+        {
+            return mcq.ShuffledOptions[index];
+        }
+        return "Invalid";
+    }
+
+    public void NavigateToTopic()
+    {
+        NavigationManager.NavigateTo("/Topic");
+    }
+    
+    private string RemoveHtmlTags(string html) // this purely for looks. 
+    {
+        if (string.IsNullOrEmpty(html))
+            return html;
+        return Regex.Replace(html, "<.*?>", string.Empty);
+    }
+
+    private void NavigateToSpecificStats()
+    {
+        NavigationManager.NavigateTo($"/Stats/{value}"); // Added forceLoad: true here
+    }
+
+}

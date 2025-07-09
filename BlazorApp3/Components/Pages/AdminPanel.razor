@@ -1,0 +1,443 @@
+@page "/AdminPanel"
+
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+
+@inject UserSession UserSession
+@inject TopicService TopicService
+@inject QuestionService QuestionService
+@inject NavigationManager NavigationManager
+
+
+<div class="content-wrapper">
+    <div class="button-home-container">
+        <button class = "button-home" @onclick = "NavigateToTopic"> Home</button>
+    </div>
+    <style>
+        
+        /* Main content card style (reusing .practice-container or .stats-container pattern) */
+        .admin-main-card {
+            padding: 25px;
+            border: 1px solid #cce0eb;
+            border-radius: 10px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            background-color: #fdfdfd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+        .btn-action {
+            margin-bottom: 20px; /* More space below buttons in admin sections */
+        }
+    </style>
+    <div class="admin-main-card">
+    <div class="admin-panel-header">
+        <h3>Admin Panel</h3>
+            <h4>Welcome Administrator</h4>
+            <p>Here you can add new topics and questions to the database.</p>
+    </div>
+    
+        @if(!string.IsNullOrEmpty(_adminErrorMessage))
+        {
+            <div class = "alert alert-danger"> @_adminErrorMessage</div>
+        } 
+        @if (!string.IsNullOrEmpty(_adminSuccessMessage))
+        {
+            <div class = "alert alert-success"> @_adminSuccessMessage</div>
+        }
+        <div class="admin-section">
+            <h5>Manage Topics</h5>
+            <button class="btn-action btn-success" @onclick="ShowAddTopicForm">Add New Topic</button>
+            
+            @if (_showTopicForm)
+            {
+                <div class="form-card">
+                    <h6>Add New Topic</h6>
+                    <div class="form-group">
+                        <label for = "newTopicTitle">Title: </label>
+                        <input id="newTopicTitle" class="form-control" @bind="_newTopic.Title" />
+                    </div>
+                    <div class="form-group">
+                        <label for = "newTopicInformation">Information: </label>
+                        <input id="newTopicInformation" class="form-control" @bind="_newTopic.Information" />
+                    </div>
+                    <div class="form-group">
+                        <label for = "newTopicTheory">Theory: </label>
+                        <input id="newTopicTheory" class="form-control" @bind="_newTopic.Theory" />
+                    </div>
+                    <div class="form-group">
+                        <label for = "newTopicFormulas">Formulas: </label>
+                        <input id="newTopicFormulas" class="form-control" @bind="_newTopic.Formulas" />
+                    </div>
+                    <button class="btn-action btn-success" @onclick="SaveNewTopic">Save Topic </button>
+                    <button class="btn-action btn-danger" @onclick="CancelTopicForm"> Cancel</button>
+                </div>
+            }
+            <h6>Existing Topics</h6>
+            @if (_topics.Any())
+            {
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Information</th>
+                        <th>Theory</th>
+                        <th>Formulas</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var topic in _topics)
+                    {
+                        <tr>
+                            <th>@topic.TopicId</th>
+                            <th>@topic.Title</th>
+                            <th>@topic.Information</th>
+                            <th>@topic.Theory</th>
+                            <th>@topic.Formulas</th>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No topics found. Add one!</p>
+            }
+        </div>
+        <div class="admin-section">
+            <h5>Manage Questions </h5>
+            <button class="btn-action btn-success" @onclick="ShowAddQuestionForm">Add New Question</button>
+            @if (_showQuestionForm)
+            {
+                <div class="form-card">
+                    <h6>Add New Question</h6>
+                    <div class="form-group">
+                        <label for="qTopic"> Topic:</label>
+                        <select id="qTopic" class="form-control" @bind="_newQuestion.TopicId">
+                            @if (_topics.Any())
+                            {
+                                @foreach (var topic in _topics)
+                                {
+                                    <option value="@topic.TopicId">@topic.Title</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value = "0"> No Topic Available</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for ="qDifficulty">Difficulty</label>
+                        <select id="qDifficulty" class="form-control" @bind="_newQuestion.Difficulty">
+                            <option value="Easy">Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for = "qQuestionType">Question Type</label>
+                        <select id="qQuestionType" class="form-control" @bind="SelectedQuestionType" @bind:after="OnQuestionTypeChanged">
+                            <option value="@QuestionType.MultipleChoice">Multiple Choice</option>
+                            <option value="@QuestionType.TypeIn">Type-In</option>
+                            <option value="@QuestionType.TrueFalse">True/False</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for = "qText">Question Text</label>
+                        <textarea id ="qText" class="form-control" @bind = "_newQuestion.QuestionText"></textarea>
+                    </div>
+                    @switch (SelectedQuestionType)
+                    {
+                        case QuestionType.MultipleChoice:
+                            var mcq = _newQuestion as MultipleChoiceQuestion;
+                            if (mcq == null)
+                            {
+                                mcq = new MultipleChoiceQuestion(); _newQuestion = mcq;
+                            } 
+                            <div class="form-group">
+                                <label for="mcqChoice1"> Choice A:</label>
+                                <input id="mcqChoice1" class="form-control" @bind="mcq.Choice1" />
+                            </div>
+                            <div class="form-group">
+                                <label for="mcqChoice2"> Choice B:</label>
+                                <input id="mcqChoice2" class="form-control" @bind="mcq.Choice2" />
+                            </div>
+                            <div class="form-group">
+                                <label for="mcqChoice3"> Choice C:</label>
+                                <input id="mcqChoice3" class="form-control" @bind="mcq.Choice3" />
+                            </div>
+                            <div class="form-group">
+                                <label for="mcqChoice4"> Choice D:</label>
+                                <input id="mcqChoice4" class="form-control" @bind="mcq.Choice4" />
+                            </div>
+                            <div class="form-group">
+                                <label for="mcqCorrectOption">Correct Option (A, B, C, or D):</label>
+                                <input id="mcqCorrectOption" class="form-control" @bind="mcq.CorrectOption" maxlength="1" /> 
+                            </div>
+                            break;
+                        case QuestionType.TrueFalse:
+                            <div class="form-group">
+                                <label for="tfqCorrectAnswer">Correct Answer:</label>
+                                <select id="tfqCorrectAnswer" class="form-control" @bind="(_newQuestion as TrueFalseQuestion).CorrectAnswer">
+                                    <option value="True">True</option>
+                                    <option value="False">False</option>
+                                </select>
+                            </div>
+                            break;
+                        case QuestionType.TypeIn:
+                            <div class="form-group">
+                                <label for="tiqCorrectAnswer">Correct Answer:</label>
+                                <input id="tiqCorrectAnswer" class="form-control" @bind="(_newQuestion as TypeInQuestion).CorrectAnswerText" />
+                            </div>
+                            break;
+                    }
+                    <button class="btn-action btn-success" @onclick="SaveNewQuestion">Save Question</button>
+                    <button class="btn-action btn-danger" @onclick="CancelQuestionsForm">Cancel</button>
+                </div>
+            }
+            <h6>Existing Questions</h6>
+            @if (_questions.Any())
+            {
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Topic</th>
+                        <th>Difficulty</th>
+                        <th>Type</th>
+                        <th>Question Text</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var question in _questions)
+                    {
+                        <tr>
+                            <td>@question.QuestionId</td>
+                            <td>@(_topics.FirstOrDefault(t => t.TopicId == question.TopicId)?.Title ?? "N/A")</td>
+                            <td>@question.Difficulty</td>
+                            <td>@question.QuestionType.ToString()</td>
+                            <td>@question.QuestionText</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+     
+@code {
+    string _adminErrorMessage = "";
+        string _adminSuccessMessage = "";
+        private bool _showTopicForm;
+        private bool _showQuestionForm;
+
+        private Data.Topic _newTopic = new Data.Topic();
+        private Question _newQuestion = new MultipleChoiceQuestion();
+
+        private QuestionType SelectedQuestionType { get; set; } = QuestionType.MultipleChoice;
+        
+        private List<Data.Topic> _topics = new List<Data.Topic>();
+        private List<Data.Question> _questions = new List<Data.Question>();
+
+        protected override async Task OnInitializedAsync()
+        {
+            // Ensure only admins can access this page
+            if (!UserSession.isLoggedIn || !UserSession.IsAdmin)
+            {
+                NavigationManager.NavigateTo("/Topic", forceLoad: true);
+                return; // Stop further execution of OnInitializedAsync
+            }
+
+            await LoadTopics();
+            await LoadQuestions();
+        }
+
+        private async Task LoadTopics()
+        {
+            try
+            {
+                _topics = await TopicService.GetAllTopicsAsync();
+                if (_topics == null) _topics = new List<BlazorApp3.Data.Topic>(); //Avoid null error
+            }
+            catch (Exception ex)
+            {
+                SetMessage($"Error loading topics: {ex.Message}", isError: true);
+            }
+           
+        }
+
+        private void ShowAddTopicForm()
+        {
+            _newTopic = new Data.Topic();
+            _showTopicForm = true;
+            ClearMessage();
+        }
+
+        private async Task SaveNewTopic()
+        {
+            ClearMessage();
+            if (string.IsNullOrWhiteSpace(_newTopic.Title) ||
+                string.IsNullOrWhiteSpace(_newTopic.Information) ||
+                string.IsNullOrWhiteSpace(_newTopic.Theory) ||
+                string.IsNullOrWhiteSpace(_newTopic.Formulas))
+            {
+                SetMessage("Topic title and description cannot be empty.", isError: true);
+                return;
+            }
+
+            try
+            {
+                await TopicService.AddTopicAsync(_newTopic);
+                _showTopicForm = false;
+                await LoadTopics();
+                SetMessage("Topic added successfully!", isError: false); // Set success message
+            }
+            catch (Exception ex)
+            {
+                SetMessage($"Error adding topic: {ex.Message}", isError: true);
+            }
+        }
+
+        private void CancelTopicForm()
+        {
+            _showTopicForm = false;
+            ClearMessage();
+        }
+
+        private async Task LoadQuestions()
+        {
+            try
+            {
+                _questions = await QuestionService.GetAllQuestionsAsync();
+                if (_questions == null) _questions = new List<Question>(); //Avoid null exception
+            }
+            catch (Exception ex)
+            {
+                SetMessage($"Error loading questions: {ex.Message}", isError: true);
+            }
+        }
+
+        private void ShowAddQuestionForm()
+        {
+            _newQuestion = new MultipleChoiceQuestion();
+            SelectedQuestionType = QuestionType.MultipleChoice;
+            _showQuestionForm = true;
+            ClearMessage();
+        }
+
+        private void OnQuestionTypeChanged()
+        {
+            switch (SelectedQuestionType)
+                {
+                    case QuestionType.MultipleChoice:
+                        _newQuestion = new MultipleChoiceQuestion();
+                        break;
+                    case QuestionType.TrueFalse:
+                        _newQuestion = new TrueFalseQuestion();
+                        break;
+                    case QuestionType.TypeIn:
+                        _newQuestion = new TypeInQuestion();
+                        break;
+                    default:
+                        _newQuestion = new MultipleChoiceQuestion(); // Fallback
+                        break;
+                }
+        }
+
+    private async Task SaveNewQuestion()
+    {
+        ClearMessage();
+        if (_newQuestion.TopicId == 0 || string.IsNullOrWhiteSpace(_newQuestion.QuestionText))
+        {
+            SetMessage("Topic and Question Text cannot be empty.", isError: true);
+            return;
+        }
+
+        if (_newQuestion is MultipleChoiceQuestion mcq)
+        {
+            if (string.IsNullOrWhiteSpace(mcq.Choice1) || string.IsNullOrWhiteSpace(mcq.Choice2) ||
+                string.IsNullOrWhiteSpace(mcq.Choice3) || string.IsNullOrWhiteSpace(mcq.Choice4) ||
+                char.IsWhiteSpace(mcq.CorrectOption) || mcq.CorrectOption == default(char))
+            {
+                SetMessage("Multiple Choice questions require options and a correct answer.", isError: true);
+                return;
+            }
+
+            // Parse options input
+            mcq.CorrectOption = char.ToUpper(mcq.CorrectOption);
+            if (mcq.CorrectOption != 'A' && mcq.CorrectOption != 'B' && mcq.CorrectOption != 'C' && mcq.CorrectOption != 'D')
+            {
+                SetMessage("Correct Option for Multiple Choice must be A, B, C, or D.", isError: true);
+                return;
+            }
+        }
+        else if (_newQuestion is TrueFalseQuestion tfq)
+        {
+            // CorrectAnswer for TrueFalse is already handled by binding to bool
+            // Ensure CorrectAnswer is set to true/false, not null
+            if (tfq.CorrectAnswer == null)
+            {
+                SetMessage("True/False questions require a correct answer (True or False).", isError: true);
+                return;
+            }
+        }
+        else if (_newQuestion is TypeInQuestion tiq)
+        {
+            if (string.IsNullOrWhiteSpace(tiq.CorrectAnswerText))
+            {
+                SetMessage("Type-In questions require a correct answer.", isError: true);
+                return;
+            }
+        }
+
+        try
+        {
+            _newQuestion.QuestionHint = null;
+            await QuestionService.AddQuestionAsync(_newQuestion);
+            _showQuestionForm = false; // Hide form
+            await LoadQuestions(); // Refresh list
+            SetMessage("Question added successfully!", isError: false); // Set success message
+        }
+        catch (Exception ex)
+        {
+            SetMessage($"Error adding question: {ex.Message}", isError: true); // Set error message
+        }
+    }
+
+    private void CancelQuestionsForm()
+    {
+        _showQuestionForm = false;
+        ClearMessage();
+    }
+
+    private void SetMessage(string message, bool isError = false)
+    {
+        if (isError)
+        {
+            _adminErrorMessage = message;
+            _adminSuccessMessage = "";
+        }
+        else
+        {
+            _adminSuccessMessage = message;
+            _adminErrorMessage = "";
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClearMessage()
+    {
+        _adminErrorMessage = "";
+        _adminSuccessMessage = "";
+    }
+
+    // Method to navigate back to topics
+    private void NavigateToTopic()
+    {
+        NavigationManager.NavigateTo("/Topic");
+    }
+
+}
