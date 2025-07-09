@@ -142,7 +142,7 @@
 
         if (loggedInUser != null)
         {
-            UserSession.Login(loggedInUser.Id, loggedInUser.UserName, loggedInUser.IsAdmin);
+            UserSession.Login(loggedInUser.UserId, loggedInUser.UserName, loggedInUser.IsAdmin);
 
             password = ""; //Clears the field
         }

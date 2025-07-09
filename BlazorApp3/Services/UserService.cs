@@ -16,10 +16,11 @@ public class UserService
         return await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == username);
     }
 
-    public async Task AddUser(User newUser)
+    public async Task<bool> RegisterUser(User newUser)
     {
         _dbContext.Users.Add(newUser);
         await _dbContext.SaveChangesAsync();
+        return true;
     }
 
     public async Task<User?> LoginUser(string usernameAttempt, string passwordAttempt)

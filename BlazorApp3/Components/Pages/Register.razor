@@ -17,23 +17,16 @@
             background-color: #fefefe;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             text-align: center;
-            margin-top: 30px;
+            margin-top: 0px;
+            
         }
-        .form-group {
-            max-width: 350px; /* Constrain form width */
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .btn-action {
-            margin-top: 20px;
-        }
-        .registration-form-layout {
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            gap: 30px; 
-            margin-bottom: 20px; 
-            max-width: 800px; 
+        .registration-form-layout{
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 30px;
+            margin-bottom:5px;
+            max-width: 750px;
             margin-left: auto;
             margin-right: auto;
         }
@@ -42,22 +35,42 @@
             flex-direction: column;
             flex-basis: 350px; 
             flex-shrink: 0; 
-            gap: 15px; 
+            gap: 0px; 
         }
-        .input-column .form-group {
-            margin-left: 0; /* Remove auto margins as it's a flex item */
+        .register-card .form-group {
+            max-width: none;
+            margin-left: 0;
             margin-right: 0;
-            margin-bottom: 0; /* Remove individual bottom margins, gap handles spacing */
+            margin-bottom: 0px;
+          
         }
-        
-    .password-requirements {
+
+        .btn-secondary {
+            background-color: #6c757d;
+            margin-left: 10px;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .password-requirements {
         list-style: none; /* Remove default bullet points */
         padding: 10px 15px;
         margin-top: 0px;
-        margin-left: 0;
+        margin-left: 0; 
         margin-right: 0;
-        flex-basis:300px;
-        flex-shrink:0;
+        flex-basis: 300px;
+        flex-shrink: 0;
+        
         
         border: 1px solid #ddd;
         border-radius: 5px;
@@ -71,49 +84,85 @@
         align-items: center;
         gap: 8px; 
     }
+
         .password-requirements li::before { /* Custom checkmark/cross icon */
             content: '\2717'; /* Unicode cross mark */
             color: #dc3545; /* Red for invalid */
             font-weight: bold;
             font-size: 1.2em;
         }
+
         .password-requirements li.valid::before {
             content: '\2713'; /* Unicode check mark */
             color: #28a745; /* Green for valid */
         }
-    .password-requirements li.valid {
-        color: #28a745; /* Green text for valid */
-    }
-    .password-requirements li.invalid {
-        color: #dc3545; /* Red text for invalid */
-    }
+
+        .password-requirements li.valid {
+            color: #28a745; /* Green text for valid */
+        }
+
+        .password-requirements li.invalid {
+            color: #dc3545; /* Red text for invalid */
+        }
+        .alert {
+            margin-top: 7px; /* Add space above the alert */
+        }
     
 </style>
     <div class="register-card">
         <h1 class="main-card-header">Register New Account</h1>
-
         <div class="registration-form-layout">
             <div class="input-column">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" class="form-control" @bind="username" />
-                </div>
-                <div class="form-group">
-                    <label for="firstname">First Name:</label>
-                    <input type="text" id="firstname" class="form-control" @bind="firstname" />
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" id="password" class="form-control" @bind="password" @oninput="OnPasswordInput" />
-                </div>
+
+            <div class="form-group">
+                <label for="firstName">First Name:</label>
+                <input type="text" id="firstName" @bind="firstname" class="form-control"/>
+                @if (!string.IsNullOrEmpty(firstNameError))
+                {
+                    <p class="error-message">@firstNameError</p>
+                }
             </div>
-                <ul class="password-requirements"> Password must:
-                    <li class="@(hasLength ? "valid" : "invalid")"> Have at least 7 letters </li>
-                    <li class="@(hasUpper ? "valid" : "invalid")"> Have at least 1 uppercase letter </li>
-                    <li class="@(hasDigit ? "valid" : "invalid")"> Have at least 1 number </li>
-                    <li class="@(hasSpecial ? "valid" : "invalid")"> Have at least 1 special character </li>
-                </ul>
+            <div class="form-group">
+                <label for="lastName">Last Name:</label>
+                <input type="text" id="lastName" @bind="lastname" class="form-control"/>
+                @if (!string.IsNullOrEmpty(lastNameError))
+                {
+                    <p class="error-message">@lastNameError</p>
+                }
             </div>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" @bind="username" class="form-control"/>
+                @if (!string.IsNullOrEmpty(usernameError))
+                {
+                    <p class="error-message">@usernameError</p>
+                }
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" @bind="email" class="form-control"/>
+                @if (!string.IsNullOrEmpty(emailError))
+                {
+                    <p class="error-message">@emailError</p>
+                }
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" @bind="password" class="form-control" @oninput="OnPasswordInput"/>
+                @if (!string.IsNullOrEmpty(passwordError))
+                {
+                    <p class="error-message">@passwordError</p>
+                }
+            </div>
+            </div>
+            <ul class="password-requirements"> Password must:
+                <li class="@(hasLength ? "valid" : "invalid")"> Have at least 7 letters </li>
+                <li class="@(hasUpper ? "valid" : "invalid")"> Have at least 1 uppercase letter </li>
+                <li class="@(hasDigit ? "valid" : "invalid")"> Have at least 1 number </li>
+                <li class="@(hasSpecial ? "valid" : "invalid")"> Have at least 1 special character </li>
+            </ul>
+        </div>
+
 
             <button class="btn-action" @onclick="attemptRegister">Register</button>
 
@@ -128,10 +177,17 @@
         </div>
     </div>
 @code {
-    string username;
-    string password;
-    string firstname;
-    string lastname;
+    private string username;
+    private string password;
+    private string firstname;
+    private string lastname;
+    private string email;
+    
+    private string firstNameError = string.Empty;
+    private string lastNameError = string.Empty;
+    private string usernameError = string.Empty;
+    private string emailError = string.Empty;
+    private string passwordError = string.Empty;
     
     bool registrationFail = false;
     bool registrationSuccess = false;
@@ -142,12 +198,15 @@
     bool hasUpper = false;
     bool hasDigit = false;
     bool hasSpecial = false;
+    
+    private System.Text.RegularExpressions.Regex nameRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z\s'-]+$");
+    private System.Text.RegularExpressions.Regex emailRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
 
     void OnPasswordInput(ChangeEventArgs a)
     {
         password = a.Value?.ToString() ?? "";
-        
         UpdatePasswordRequirements();
+        passwordError = string.Empty;
     }
     
     void UpdatePasswordRequirements() 
@@ -187,25 +246,79 @@
         return hasLength && hasDigit && hasUpper && hasSpecial;
     }
 
+    private bool ValidateInput()
+    {
+        bool isValid = true;
+        firstNameError = string.Empty;
+        lastNameError = string.Empty;
+        usernameError = string.Empty;
+        emailError = string.Empty;
+        passwordError = string.Empty;
+        errorMessage = string.Empty;
+        
+        if(string.IsNullOrWhiteSpace(firstname))
+        {
+            firstNameError = "First name is required";
+            isValid = false;
+        } 
+        else if (!nameRegex.IsMatch(firstname))
+        {
+            firstNameError = "First name cannot have special symbols or numbers.";
+            isValid = false;
+        }
+        
+        if(string.IsNullOrWhiteSpace(lastname))
+        {
+            lastNameError = "Last name is required";
+            isValid = false;
+        } 
+        else if (!nameRegex.IsMatch(lastname))
+        {
+            lastNameError = "First name cannot have special symbols or numbers.";
+            isValid = false;
+        }
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            usernameError = "Username is required.";
+            isValid = false;
+        }
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            emailError = "Email is required.";
+            isValid = false;
+        }
+        else if (!emailRegex.IsMatch(email))
+        {
+            emailError = "Invalid email address format.";
+            isValid = false;
+        } 
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            passwordError = "Password is required.";
+            isValid = false;
+        }
+        else if (!isPasswordValid())
+        {
+            passwordError = "Password does not meet all strength requirements.";
+            isValid = false;
+        }
+
+        return isValid;
+    }
     async Task attemptRegister()
     {
         registrationSuccess = false; // Reset status messages
         registrationFail = false;
+        errorMessage = string.Empty;
 
         // Basic validation: Check if any field is empty or just whitespace
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        if (!ValidateInput())
         {
             registrationFail = true;
-            return; // Stop the method here if validation fails
+            errorMessage = "Please correct the errors in the form."; // General message for client-side validation failure
+            return; // Stop the method here if client-side validation fails
         }
-
-        if (!isPasswordValid())
-        {
-            errorMessage = "The password doesn't meet all of the requirements";
-            registrationFail = true;
-            return;
-        }
-
+        
         try
         {
             // Optional: Check if username or email already exists to prevent duplicates
@@ -220,34 +333,50 @@
 
             string hashedPassword = BCrypt.HashPassword(password);
 
-            var newUser = new BlazorApp3.Data.User
+            var newUser = new Data.User
             {
                 UserName = username,
                 FirstName = firstname,
-                // Email = email,
-                PasswordHash = hashedPassword //  HASH 
+                LastName = lastname,
+                Email = email,
+                PasswordHash = hashedPassword,
+                IsAdmin = false
             };
 
-            await UserService.AddUser(newUser);
-            registrationSuccess = true;
-
-
-            // Clear the form fields after successful registration
-            username = "";
-            firstname = "";
-            //email = "";
-            password = "";
-            UpdatePasswordRequirements(); //Reset requirement indicators
+            bool registered = await UserService.RegisterUser(newUser);
+            if (registered)
+            {
+                registrationSuccess = true;
+                ClearFormFields(); // Clear the form fields after successful registration
+            }
+            else
+            {
+                // This 'else' block will be hit if UserService.RegisterUser returns false
+                // (e.g., if the email was already taken, or another race condition occurred)
+                registrationFail = true;
+                errorMessage = "Registration failed. Email might already be taken.";
+            }
         }
         catch (Exception ex)
         {
             registrationFail = true;
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+
         }
     }
 
     private void NavigateToLogin()
     {
         NavigationManager.NavigateTo("/");
+    }
+    private void ClearFormFields()
+    {
+        firstname = string.Empty;
+        lastname = string.Empty;
+        username = string.Empty;
+        email = string.Empty;
+        password = string.Empty;
+        UpdatePasswordRequirements(); //Reset requirement indicators
     }
 
 }

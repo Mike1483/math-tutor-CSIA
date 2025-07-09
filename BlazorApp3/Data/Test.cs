@@ -13,9 +13,6 @@ public class Test
     public int DurationMinutes { get; set; }
     public int NumberOfQuestions { get; set; }
     public List<Question> Questions { get; set; } = new List<Question>();
-
-    public DateTime StartTime { get; set; }
-    public DateTime? EndTime { get; set; }
     public int CorrectAnswerCount { get; set; }
     public int TotalQuestionsAttempt { get; set; }
     public bool IsCompleted { get; set; } = false;

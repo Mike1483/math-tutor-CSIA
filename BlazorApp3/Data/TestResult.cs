@@ -10,7 +10,11 @@ public class TestResult
     public int TestResultId { get; set; }
     
     public int UserId { get; set; }
+    [ForeignKey("UserId")]
+    public User User { get; set; }
     public int TopicId { get; set; }
+    [ForeignKey("TopicId")]
+    public Topic Topic { get; set; }
     public string TopicTitle { get; set; }
     public string Difficulty { get; set; }
     public int NumberOfQuestions { get; set; }

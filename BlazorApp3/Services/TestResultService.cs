@@ -17,14 +17,14 @@ public class TestResultService
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task<List<TestResult>> RetrieveTestResults(int UserId)
+    public async Task<List<TestResult>> RetrieveTestResults(int userId)
     {
-        return await _dbContext.TestResults.Where (x => x.UserId == UserId).ToListAsync();
+        return await _dbContext.TestResults.Where (x => x.UserId == userId).ToListAsync();
     }
 
-    public async Task<List<TestResult>> RetrieveTestResults(int UserId, int TopicId)
+    public async Task<List<TestResult>> RetrieveTestResults(int userId, int topicId)
     {
-        return await _dbContext.TestResults.Where (x => x.UserId == UserId && x.TopicId == TopicId).ToListAsync();
+        return await _dbContext.TestResults.Where (x => x.UserId == userId && x.TopicId == topicId).ToListAsync();
     }
     
 }

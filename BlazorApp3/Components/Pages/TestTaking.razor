@@ -500,7 +500,7 @@
         _timer?.Stop();
         _timer?.Dispose();
 
-        _test.EndTime = DateTime.UtcNow;
+        _test.TestEndTime = DateTime.UtcNow;
         _test.IsCompleted = true;
         
 
@@ -533,7 +533,7 @@
                 numberOfQuestions: _test.NumberOfQuestions,
                 numberOfCorrectAnswers: _test.CorrectAnswerCount,
                 numberOfQuestionsAttempted: _test.TotalQuestionsAttempt,
-                testEndTime: _test.EndTime.Value
+                testEndTime: _test.TestEndTime
             );
         }
         try
