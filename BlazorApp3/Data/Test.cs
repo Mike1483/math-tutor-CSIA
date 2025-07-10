@@ -1,4 +1,5 @@
 namespace BlazorApp3.Data;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ public class Test
     public bool IsCompleted { get; set; } = false;
     public DateTime TestEndTime { get; set; }
 
-    public Test(int topicId, string difficulty, int length, bool isTimed, int durationMinutes, List<Question> questions)  
+    public Test(int topicId, string difficulty, int length, bool isTimed, int durationMinutes, List<Question> questions)
     {
         NumberOfQuestions = length;
         TopicId = topicId;
@@ -26,12 +27,11 @@ public class Test
         IsTimed = isTimed;
         DurationMinutes = durationMinutes;
         Questions = questions;
-        
     }
 
     public double CalculateScorePercentage()
     {
         if (TotalQuestionsAttempt == 0) return 0.0;
-        return (double) CorrectAnswerCount * 100.0 / TotalQuestionsAttempt;
+        return (double)CorrectAnswerCount * 100.0 / TotalQuestionsAttempt;
     }
 }

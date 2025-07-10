@@ -11,100 +11,111 @@
         <button class="button-home" @onclick="NavigateToTopic"> Home</button>
     </div>
     <style>
-    .practice-container{
-        padding: 20px;
-        border: 1px solid #cce0eb; /* Consistent border */
-        border-radius: 10px; /* Consistent border-radius */
-        margin-top: 20px;
-        margin-bottom: 10px;
-        background-color: #fdfdfd; /* Consistent background */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Consistent shadow */
-    }
-    .question-text {
-        font-size: 1.5em;
-        font-weight: bold;
-        margin-bottom: 15px;
-        color: #222;
-        line-height: 1.6;
-    }
-    .options-group label {
-        display: flex; /* Use flex for alignment of radio/checkbox and text */
-        align-items: center;
-        margin-bottom: 12px;
-        cursor: pointer;
-        font-size: 1.1em;
-        padding: 12px;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        transition: background-color 0.2s, border-color 0.2s;
-        background-color: #fff;
-    }
-    .options-group label:hover {
-        background-color: #f0f5ff; /* Lighter blue on hover */
-        border-color: #aaddff;
-    }
-    .options-group input[type="radio"], .options-group input[type="checkbox"] {
-        margin-right: 15px;
-        transform: scale(1.2); /* Slightly larger radio/checkbox */
-    }
+        .practice-container {
+            padding: 20px;
+            border: 1px solid #cce0eb; /* Consistent border */
+            border-radius: 10px; /* Consistent border-radius */
+            margin-top: 20px;
+            margin-bottom: 10px;
+            background-color: #fdfdfd; /* Consistent background */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Consistent shadow */
+        }
 
-    .practice-feedback {
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 20px;
-        font-weight: bold;
-        text-align: center;
-    }
-    .btn-action{
-        margin-top:15px;
-    }
-    .btn-next{ /* Specific style for next button */
-        background-color: #28a745;
-    }
-    .btn-next:hover{
-        background-color: #218838;
-    }
-    .typein-input {
-        width: 100%;
-        padding: 8px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 1em;
-    }
+        .question-text {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #222;
+            line-height: 1.6;
+        }
 
-    .typein-input:focus {
-        border-color: #007bff;
-        outline: none;
-    }
-    .feedback-correct {
-        background-color: #e6ffe6; /* Light green */
-        color: #1a6d00; /* Darker green */
-        border: 1px solid #a3e6a3;
-    }
+        .options-group label {
+            display: flex; /* Use flex for alignment of radio/checkbox and text */
+            align-items: center;
+            margin-bottom: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            transition: background-color 0.2s, border-color 0.2s;
+            background-color: #fff;
+        }
 
-    .feedback-incorrect {
-        background-color: #ffe6e6; /* Light red */
-        color: #b30000; /* Darker red */
-        border: 1px solid #e6a3a3;
-    }
-    .loading-message, .error-message {
-        text-align: center;
-        margin-top: 20px;
-        font-size: 1.1em;
-        color: #555;
-    }
-    .error-message {
-        color: #dc3545;
-    }
+        .options-group label:hover {
+            background-color: #f0f5ff; /* Lighter blue on hover */
+            border-color: #aaddff;
+        }
 
-</style>
+        .options-group input[type="radio"], .options-group input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2); /* Slightly larger radio/checkbox */
+        }
+
+        .practice-feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .btn-action {
+            margin-top: 15px;
+        }
+
+        .btn-next { /* Specific style for next button */
+            background-color: #28a745;
+        }
+
+        .btn-next:hover {
+            background-color: #218838;
+        }
+
+        .typein-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .typein-input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .feedback-correct {
+            background-color: #e6ffe6; /* Light green */
+            color: #1a6d00; /* Darker green */
+            border: 1px solid #a3e6a3;
+        }
+
+        .feedback-incorrect {
+            background-color: #ffe6e6; /* Light red */
+            color: #b30000; /* Darker red */
+            border: 1px solid #e6a3a3;
+        }
+
+        .loading-message, .error-message {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .error-message {
+            color: #dc3545;
+        }
+
+    </style>
 
     @if (!UserSession.isLoggedIn)
     {
-        <p class="alert alert-danger"> Sorry! only logged in users can access topic selection <br/> Redirecting to login.</p>
-
+        <p class="alert alert-danger"> Sorry! only logged in users can access topic selection <br/> Redirecting to
+            login.</p>
     }
     else if (_practiceLoading)
     {
@@ -165,12 +176,16 @@
                 case QuestionType.TrueFalse:
                     <div class="options-group">
                         <label>
-                            <input type="radio" name="practiceTfOptions" value="True" @onchange="@(e => HandlePracticeTfSelection(true))"
-                                   checked="@(_practiceSelectedTfOption == true && !_isAnswerChecked)" disabled="@(_isAnswerCorrect)"/> True
+                            <input type="radio" name="practiceTfOptions" value="True"
+                                   @onchange="@(e => HandlePracticeTfSelection(true))"
+                                   checked="@(_practiceSelectedTfOption == true && !_isAnswerChecked)"
+                                   disabled="@(_isAnswerCorrect)"/> True
                         </label>
                         <label>
-                            <input type="radio" name="practiceTfOptions" value="False" @onchange="@(e => HandlePracticeTfSelection(false))"
-                                   checked="@(_practiceSelectedTfOption == false && !_isAnswerChecked)" disabled="@(_isAnswerCorrect)"/> False
+                            <input type="radio" name="practiceTfOptions" value="False"
+                                   @onchange="@(e => HandlePracticeTfSelection(false))"
+                                   checked="@(_practiceSelectedTfOption == false && !_isAnswerChecked)"
+                                   disabled="@(_isAnswerCorrect)"/> False
                         </label>
                     </div>
                     @if (_isAnswerChecked) // Display feedback after checking
@@ -183,7 +198,8 @@
                     break;
 
                 case QuestionType.TypeIn:
-                    <input type="text" @bind-value="_practiceTypedInAnswer" @bind-value:event="oninput" class="typein-input" placeholder="Type your answer here..." disabled="@(_isAnswerCorrect)"/>
+                    <input type="text" @bind-value="_practiceTypedInAnswer" @bind-value:event="oninput"
+                           class="typein-input" placeholder="Type your answer here..." disabled="@(_isAnswerCorrect)"/>
                     @if (_isAnswerChecked) // Display feedback after checking. "Disabled" makes the input field uninteractive.
                     {
                         <div class="practice-feedback @(_isAnswerCorrect ? "feedback-correct" : "feedback-incorrect")">
@@ -206,13 +222,13 @@
                 {
                     <button class="btn-action" @onclick="CheckPracticeQuestion">Check Answer</button>
                 }
-                @if(_isAnswerChecked)
+                @if (_isAnswerChecked)
                 {
                     <button class="btn-action btn-next" @onclick="LoadRandomPracticeQuestion">Next Question</button>
                 }
             </div>
         }
-              
+
     </div>
 </div>
 
@@ -237,8 +253,8 @@
             NavigationManager.NavigateTo("/", true);
             return;
         }
+
         await LoadRandomPracticeQuestion();
-        
     }
 
     private async Task LoadRandomPracticeQuestion()
@@ -251,7 +267,7 @@
         _showHint = false;
         _incorrectAttempts = 0;
         ClearPracticeUserAnswer();
-        
+
         try
         {
             _currentPracticeQuestion = await QuestionService.GetRandomQuestion(); // Use "Easy" or "Medium" based on available data
@@ -291,11 +307,13 @@
         {
             _incorrectAttempts++;
             string correctAnswerDisplay = "";
-            
+
             if (_incorrectAttempts == 1) // First incorrect attempt
             {
                 _practiceFeedback = "Incorrect. Try again!";
-            } else {
+            }
+            else
+            {
                 switch (_currentPracticeQuestion.QuestionType)
                 {
                     case QuestionType.MultipleChoice:
@@ -311,9 +329,10 @@
                         correctAnswerDisplay = $" Correct: '{tiq.CorrectAnswerText}'.";
                         break;
                 }
+
                 _practiceFeedback = $"Incorrect.{correctAnswerDisplay}";
             }
-            
+
             _showHint = true;
         }
 
@@ -322,16 +341,16 @@
     }
 
     private object GetCurrentPracticeAnswer() //Current User's answer.
+    {
+        return _currentPracticeQuestion.QuestionType switch
         {
-            return _currentPracticeQuestion.QuestionType switch
-            {
-                QuestionType.MultipleChoice => _practiceSelectedMcqOption,
-                QuestionType.TrueFalse => _practiceSelectedTfOption,
-                QuestionType.TypeIn => _practiceTypedInAnswer, //Used for checking if the answer is correct
-                _ => null,
-            };
-        }
-    
+            QuestionType.MultipleChoice => _practiceSelectedMcqOption,
+            QuestionType.TrueFalse => _practiceSelectedTfOption,
+            QuestionType.TypeIn => _practiceTypedInAnswer, //Used for checking if the answer is correct
+            _ => null,
+        };
+    }
+
     private void HandlePracticeMcqSelection(char optionLetter)
     {
         _practiceSelectedMcqOption = optionLetter;
@@ -339,6 +358,7 @@
         _isAnswerChecked = false;
         _showHint = false;
     }
+
     private void HandlePracticeTfSelection(bool value)
     {
         _practiceSelectedTfOption = value;
@@ -346,13 +366,14 @@
         _isAnswerChecked = false;
         _showHint = false;
     }
+
     private void ClearPracticeUserAnswer()
     {
         _practiceSelectedMcqOption = default(char);
         _practiceSelectedTfOption = null;
         _practiceTypedInAnswer = string.Empty;
     }
-    
+
     private string GetOptionText(MultipleChoiceQuestion mcq, char optionLetter)
     {
         int index = char.ToUpper(optionLetter) - 'A'; //Take away from ASCII 'D' - 'A' = 3
@@ -360,13 +381,15 @@
         {
             return mcq.ShuffledOptions[index];
         }
+
         return "Invalid";
-     }
-    
+    }
+
     private void NavigateToTopic()
     {
         NavigationManager.NavigateTo("/Topic");
     }
+
     private string RemoveHtmlTags(string html) // this purely for looks. 
     {
         if (string.IsNullOrEmpty(html))

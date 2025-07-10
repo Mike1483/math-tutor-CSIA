@@ -7,7 +7,7 @@
 
 <div class="content-wrapper">
     <style>
-        
+
         .login-card {
             padding: 30px;
             border: 1px solid #e0e0e0; /* Lighter border */
@@ -27,6 +27,7 @@
         .btn-action {
             margin-top: 20px; /* More space above the login button */
         }
+
         .btn-register {
             background-color: #6c757d; /* A neutral grey */
             color: white;
@@ -39,29 +40,36 @@
             transition: background-color 0.3s ease;
             margin-top: 10px; /* Space from login button */
         }
+
         .btn-register:hover {
             background-color: #5a6268;
         }
+
         .logged-in-status {
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid #eee;
         }
+
         .logged-in-status p {
             margin-bottom: 5px;
             color: #555;
         }
+
         .logged-in-status button {
             margin-top: 15px; /* Space above logout/navigate buttons */
         }
+
         .password-input-group {
             display: flex; /* Use flex to put input and button side-by-side */
             align-items: center; /* Vertically align them */
             gap: 5px; /* Small gap between input and button */
         }
+
         .password-input-group .form-control {
             flex-grow: 1; /* Allow input to take most of the space */
         }
+
         .toggle-password-button {
             background-color: #e0e0e0; /* Light grey button */
             color: #333;
@@ -73,6 +81,7 @@
             transition: background-color 0.2s ease;
             white-space: nowrap; /* Prevent text from wrapping */
         }
+
         .toggle-password-button:hover {
             background-color: #d0d0d0;
         }
@@ -101,6 +110,7 @@
             {
                 <div class="alert alert-danger">Login failed. Invalid username or password</div>
             }
+
             <p style="margin-top: 25px; color: #6c757d;">Don't have an account?</p>
             <button class="btn-register" @onclick="NavigateToRegister">Create Account</button>
         }
@@ -116,13 +126,14 @@
         }
     </div>
 </div>
+
 @code {
     string username = "";
     string password = "";
     bool loginFailed = false;
 
     User? loggedInUser = null;
-    
+
     private bool showPassword = false;
     private string passwordInputType = "password";
 
@@ -130,6 +141,7 @@
     {
         NavigationManager.NavigateTo("/Topic");
     }
+
     void NavigateToRegister()
     {
         NavigationManager.NavigateTo("/Register");
@@ -162,10 +174,11 @@
         UserSession.clear();
         NavigationManager.NavigateTo("/");
     }
+
     private void TogglePasswordVisibility()
     {
         showPassword = !showPassword;
         passwordInputType = showPassword ? "text" : "password";
     }
-    
+
 }

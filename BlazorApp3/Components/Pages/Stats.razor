@@ -2,7 +2,7 @@
 @page "/Stats/{TopicId:int}"
 
 @using BlazorApp3.Services
-@using BlazorApp3.Data 
+@using BlazorApp3.Data
 @inject NavigationManager NavigationManager
 @inject TestResultService TestResultService
 @inject TopicService TopicService
@@ -10,15 +10,15 @@
 
 <div class="content-wrapper">
     <div class="button-home-container">
-        <button class ="button-home" @onclick="NavigateToTopicSelection"> Home</button>
+        <button class="button-home" @onclick="NavigateToTopicSelection"> Home</button>
     </div>
     <style>
-        
+
         .stats-container {
             padding: 15px;
-            border: 1px solid #cce0eb; 
-            border-radius: 10px; 
-            background-color: #fdfdfd; 
+            border: 1px solid #cce0eb;
+            border-radius: 10px;
+            background-color: #fdfdfd;
             margin-top: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Consistent shadow */
         }
@@ -28,30 +28,36 @@
             margin-bottom: 20px;
             color: #333;
         }
+
         .stats-header h3 {
             font-size: 1.8em;
             margin-bottom: 5px;
         }
+
         .stats-header p {
             font-size: 1em;
             color: #555;
         }
-        .topic-filter-section{
-            text-align:center;
+
+        .topic-filter-section {
+            text-align: center;
             margin-bottom: 15px;
         }
+
         .topic-filter-section select {
             padding: 8px 12px;
             border-radius: 4px;
             border: 1px solid #ccc;
             font-size: 1em;
         }
+
         .stats-summary {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
             margin-bottom: 25px;
         }
+
         .stats-card {
             background-color: #e9f5ff; /* Lighter blue background */
             border: 1px solid #cce0ff;
@@ -61,46 +67,53 @@
             text-align: center;
             flex: 1 1 calc(33% - 30px); /* Adjust for new margin */
             min-width: 150px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
+
         .stats-card h4 {
             font-size: 1.1em;
             color: #007bff;
             margin-bottom: 5px;
         }
+
         .stats-card p {
             font-size: 1.5em;
             font-weight: bold;
             color: #333;
         }
+
         .no-results {
             text-align: center;
             color: #888;
             margin-top: 20px;
             font-size: 1em;
         }
+
         .prediction-section {
             margin-top: 30px;
             padding-top: 15px;
             border-top: 1px dashed #e0e0e0;
             text-align: center;
-            margin-bottom:30px;
+            margin-bottom: 30px;
         }
+
         .prediction-section h4 {
             font-size: 1.5em;
             color: #007bff;
             margin-bottom: 10px;
         }
+
         .prediction-section p {
             font-size: 1.2em;
             font-weight: bold;
             color: #28a745;
         }
+
         .prediction-section p.no-prediction {
             color: #888;
         }
     </style>
-    
+
     <div class="stats-container">
         <div class="stats-header">
             <h3> Your Test Statistics</h3>
@@ -115,8 +128,9 @@
         </div>
         <div class="topic-filter-section">
             <label for="topic-select" style="margin-right: 10px; font-weight: 600; color: #555;">View Stats For:</label>
-            <select id="topic-select" class="form-control" @bind="_selectedTopicIdForFilter" @bind:after="OnTopicFilterChanged">
-                <option value ="0">Overall Statistics</option>
+            <select id="topic-select" class="form-control" @bind="_selectedTopicIdForFilter"
+                    @bind:after="OnTopicFilterChanged">
+                <option value="0">Overall Statistics</option>
                 @if (_availableTopics != null)
                 {
                     @foreach (var topic in _availableTopics)
@@ -129,15 +143,18 @@
         @if (_loadingStats)
         {
             <p class="no-results"> Stats are loading...</p>
-        } else if (_errorMessage != null)
+        }
+        else if (_errorMessage != null)
         {
             <p class="no-results">An unexpected error occured: @_errorMessage</p>
-        } else if (!_userTestResults.Any() && _selectedTopicIdForFilter == 0)
+        }
+        else if (!_userTestResults.Any() && _selectedTopicIdForFilter == 0)
         {
-            <p class = "no-results"> No test taken yet! Take some tests to see your overall stats!</p>
-        } else if (!_userTestResults.Any() && _selectedTopicIdForFilter > 0)
+            <p class="no-results"> No test taken yet! Take some tests to see your overall stats!</p>
+        }
+        else if (!_userTestResults.Any() && _selectedTopicIdForFilter > 0)
         {
-            <p class = "no-results"> No test results found for '@_selectedTopicTitle'.</p>
+            <p class="no-results"> No test results found for '@_selectedTopicTitle'.</p>
         }
         else
         {
@@ -162,7 +179,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                @{ int counter = 0;}
+                @{ int counter = 0; }
                 @foreach (var result in _userTestResults.OrderByDescending(x => x.TestResultId).Take(10))
                 {
                     counter++;
@@ -179,15 +196,16 @@
                 <h4>Future Score Prediction</h4>
                 @if (_predictedScore.HasValue)
                 {
-                    <p> Based on your progress, your next test score is predicted to be 
-                        <span style ="color: #007bff">@_predictedScore.Value.ToString("F2")% </span>
-                    <br/>
-                    Your trend is: <strong>@_trendDescription</strong>
+                    <p> Based on your progress, your next test score is predicted to be
+                        <span style="color: #007bff">@_predictedScore.Value.ToString("F2")% </span>
+                        <br/>
+                        Your trend is: <strong>@_trendDescription</strong>
                     </p>
-                    }
+                }
                 else
                 {
-                    <p class = "no-prediction"> There is not enough data to make a reliable prediction yet. Keep takings tests!</p>
+                    <p class="no-prediction"> There is not enough data to make a reliable prediction yet. Keep takings
+                        tests!</p>
                 }
             </div>
         }
@@ -209,7 +227,7 @@
 
     private double? _predictedScore;
     private string _trendDescription = "Not enough data";
-    
+
     private int _previousTopicId;
 
 
@@ -239,8 +257,9 @@
             _loadingStats = false;
             return;
         }
+
         _selectedTopicIdForFilter = TopicId;
-        
+
         if (_selectedTopicIdForFilter > 0)
         {
             var topic = _availableTopics.FirstOrDefault(x => x.TopicId == TopicId);
@@ -277,7 +296,7 @@
         _userTestResults = new List<TestResult>();
         _totalTestsCompleted = 0;
         _averageScore = 0.0;
-        
+
         _predictedScore = null;
         _trendDescription = "Not enough data";
 
@@ -297,9 +316,9 @@
             {
                 _totalTestsCompleted = _userTestResults.Count;
                 _averageScore = _userTestResults.Average(x => x.ScorePercentage); //Calculates the average score of all tests taken
-                
-               _predictedScore = CalculatePredictedScore(_userTestResults);
-               _trendDescription = DetermineTrend(_userTestResults);
+
+                _predictedScore = CalculatePredictedScore(_userTestResults);
+                _trendDescription = DetermineTrend(_userTestResults);
             }
             else
             {
@@ -336,7 +355,7 @@
 
         double weightedSum = 0.0;
         double totalWeight = 0.0;
-        for(int x = 0; x < numScoreToConsider; x++)
+        for (int x = 0; x < numScoreToConsider; x++)
         {
             double currentScore = sortedResults[x].ScorePercentage;
             double weight = numScoreToConsider - x;
@@ -373,7 +392,8 @@
         if (firstHalfAverage > (secondHalfAverage + significantTrend))
         {
             return "improving";
-        } else if (firstHalfAverage < secondHalfAverage - significantTrend)
+        }
+        else if (firstHalfAverage < secondHalfAverage - significantTrend)
         {
             return "worsening";
         }
@@ -387,4 +407,5 @@
     {
         NavigationManager.NavigateTo("/Topic");
     }
+
 }

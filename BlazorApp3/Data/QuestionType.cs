@@ -1,8 +1,8 @@
 namespace BlazorApp3.Data;
 
-    public enum QuestionType
-    {
-        MultipleChoice,
-        TrueFalse,
-        TypeIn 
-    }
+public enum QuestionType
+{
+    MultipleChoice,
+    TrueFalse,
+    TypeIn
+}

@@ -1,5 +1,6 @@
 namespace BlazorApp3.Services;
-using BlazorApp3.Data; 
+
+using BlazorApp3.Data;
 using Microsoft.EntityFrameworkCore;
 
 public class TestResultService
@@ -19,12 +20,11 @@ public class TestResultService
 
     public async Task<List<TestResult>> RetrieveTestResults(int userId)
     {
-        return await _dbContext.TestResults.Where (x => x.UserId == userId).ToListAsync();
+        return await _dbContext.TestResults.Where(x => x.UserId == userId).ToListAsync();
     }
 
     public async Task<List<TestResult>> RetrieveTestResults(int userId, int topicId)
     {
-        return await _dbContext.TestResults.Where (x => x.UserId == userId && x.TopicId == topicId).ToListAsync();
+        return await _dbContext.TestResults.Where(x => x.UserId == userId && x.TopicId == topicId).ToListAsync();
     }
-    
 }

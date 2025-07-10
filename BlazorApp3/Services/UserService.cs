@@ -1,8 +1,10 @@
 namespace BlazorApp3.Services;
+
 using Microsoft.EntityFrameworkCore;
-using BlazorApp3.Data; 
+using BlazorApp3.Data;
+
 //Class for communicating with the data base
-public class UserService 
+public class UserService
 {
     private readonly ApplicationDbContext _dbContext;
 
@@ -25,28 +27,22 @@ public class UserService
 
     public async Task<User?> LoginUser(string usernameAttempt, string passwordAttempt)
     {
-      User? user = await GetUserByUserName(usernameAttempt);
-      if (user != null)
-      {
-          if (BCrypt.Net.BCrypt.Verify(passwordAttempt, user.PasswordHash))
-          {
-              return user; //Login successful
-          }
-      }
-      return null; //Login unsuccessful.
-    } 
+        User? user = await GetUserByUserName(usernameAttempt);
+        if (user != null)
+        {
+            if (BCrypt.Net.BCrypt.Verify(passwordAttempt, user.PasswordHash))
+            {
+                return user; //Login successful
+            }
+        }
+
+        return null; //Login unsuccessful.
+    }
 
     public async Task DeleteUserByUsername(string username)
     {
         var userToDelete = await _dbContext.Users.FirstOrDefaultAsync(u => u.UserName == username);
-        if (userToDelete == null)
-        {
-            // User not found
-        }
         _dbContext.Users.Remove(userToDelete);
         await _dbContext.SaveChangesAsync();
-       
     }
-    
-
 }

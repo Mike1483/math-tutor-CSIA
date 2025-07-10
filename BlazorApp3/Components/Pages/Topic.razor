@@ -11,8 +11,9 @@
 
     <style>
         .topic-page-wrapper {
-            max-width: 1000px; 
+            max-width: 1000px;
         }
+
         .Title {
             font-size: 30px;
             text-align: center;
@@ -57,7 +58,7 @@
             display: inline-block;
             width: 300px;
             box-sizing: border-box;
-            
+
         }
 
         .dropdown-button {
@@ -116,7 +117,7 @@
     </style>
 
     <p class="Title"> Welcome @UserSession.UserName!</p>
-    
+
     <div class="button-container">
         <div>
             @if (UserSession.IsAdmin && UserSession.isLoggedIn)
@@ -164,7 +165,7 @@
 @code {
     private List<Data.Topic> _topics = new List<Data.Topic>();
     private bool _isLoggedInAndLoaded = false;
-    
+
     protected override async Task OnInitializedAsync()
     {
         // Ensure user is logged in before attempting to load topics
@@ -173,7 +174,7 @@
             _isLoggedInAndLoaded = false;
             StateHasChanged();
             await Task.Delay(1000);
-            
+
             NavigationManager.NavigateTo("/", true);
             return;
         }
@@ -189,10 +190,10 @@
         }
         catch (Exception ex)
         {
-           
             _topics = new List<BlazorApp3.Data.Topic>(); // Prevent null exception
         }
     }
+
     public void NavigateToSettings()
     {
         NavigationManager.NavigateTo("/Settings");

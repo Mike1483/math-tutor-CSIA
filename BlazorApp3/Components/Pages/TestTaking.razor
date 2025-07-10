@@ -14,16 +14,17 @@
 
 <div class="content-wrapper">
     <div class="button-home-container">
-        <button class = "button-home" @onclick = "NavigateToTopic"> Home</button>
+        <button class="button-home" @onclick="NavigateToTopic"> Home</button>
     </div>
     <style>
         html, body {
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
+            height: 100%;
+            margin: 0;
+            padding: 0;
             font-family: 'Inter', sans-serif; /* Consistent modern font */
             background-color: #eef2f5; /* Light background for the whole page */
         }
+
         .content-wrapper {
             margin: 20px auto; /* More margin from top/bottom, centered horizontally */
             padding: 25px; /* Increased padding */
@@ -41,10 +42,12 @@
             box-sizing: border-box;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* More pronounced, soft shadow */
         }
+
         .button-home-container {
             text-align: right;
             margin-bottom: 15px; /* Add some space below the home button */
         }
+
         .button-home {
             background-color: #007bff; /* Primary blue */
             color: white;
@@ -58,11 +61,13 @@
             box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Subtle shadow */
             letter-spacing: 0.5px; /* Slightly spaced text */
         }
+
         .button-home:hover {
             background-color: #0056b3; /* Darker blue on hover */
             transform: translateY(-2px); /* Lift effect on hover */
             box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3); /* Enhanced shadow on hover */
         }
+
         .practice-container {
             padding: 25px; /* Increased padding */
             border: 1px solid #cce0eb; /* Softer border */
@@ -72,12 +77,13 @@
             background-color: #fdfdfd; /* Very light background for inner containers */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); /* Soft shadow for depth */
         }
+
         .test-header {
             text-align: center;
             margin-bottom: 20px; /* Space below the header block */
             padding-bottom: 15px; /* Add padding to the bottom of the header */
             border-bottom: 1px solid #e0e0e0; /* Separator line */
-            }
+        }
 
         .test-header h3 {
             font-size: 2em; /* Larger title for the test header */
@@ -239,10 +245,12 @@
             background-color: #28a745;
             box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
         }
+
         .btn-next:hover {
             background-color: #218838;
             box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
         }
+
         .typein-input {
             width: 100%;
             padding: 12px 15px;
@@ -254,6 +262,7 @@
             box-sizing: border-box;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
+
         .typein-input:focus {
             border-color: #007bff;
             outline: none;
@@ -264,30 +273,32 @@
     @if (_test == null || _test.Questions == null)
     {
         <p> Loading test or no questions found</p>
-        @if(!String.IsNullOrEmpty(_errorMessage))
+        @if (!String.IsNullOrEmpty(_errorMessage))
         {
-            <p class = "feedback-incorrect">Error: @_errorMessage </p>
+            <p class="feedback-incorrect">Error: @_errorMessage </p>
         }
     }
-    else if (_test.IsCompleted){
-    <div class="practice-container">
-        <h3>Test Completed!</h3>
-        <p class = "question-text"> You scored: @_test.CorrectAnswerCount out of @_test.NumberOfQuestions!</p>
-        <p class = "question-text"> Percentage: @_test.CalculateScorePercentage().ToString("F2")%</p>
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="btn-action" @onclick="NavigateToTopic">Back to Topic</button>
+    else if (_test.IsCompleted)
+    {
+        <div class="practice-container">
+            <h3>Test Completed!</h3>
+            <p class="question-text"> You scored: @_test.CorrectAnswerCount out of @_test.NumberOfQuestions!</p>
+            <p class="question-text"> Percentage: @_test.CalculateScorePercentage().ToString("F2")%</p>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-action" @onclick="NavigateToTopic">Back to Topic</button>
+            </div>
         </div>
-    </div>
     }
     else
-    { 
+    {
         <div class="test-header practice-container">
-            <h3 style = "margin-bottom: 10px;"> Test: @_currentTopicTitle </h3>
-            <p class="question-text" style="font-size:1.1em; margin-bottom:5px;">Question @(_currentQuestionIndex+1) / @_test.NumberOfQuestions  </p>
+            <h3 style="margin-bottom: 10px;"> Test: @_currentTopicTitle </h3>
+            <p class="question-text" style="font-size:1.1em; margin-bottom:5px;">
+                Question @(_currentQuestionIndex + 1) / @_test.NumberOfQuestions  </p>
             @if (_test.IsTimed)
             {
-
-                <p class ="question-text" style = "font-size: 1.1em;"> Time Left: @(_remainingTime.Minutes.ToString("D2")):@(_remainingTime.Seconds.ToString("D2"))
+                <p class="question-text" style="font-size: 1.1em;"> Time
+                    Left: @(_remainingTime.Minutes.ToString("D2")):@(_remainingTime.Seconds.ToString("D2"))
                 </p>
             }
         </div>
@@ -295,52 +306,57 @@
             <div class="question-text">
                 @_test.Questions[_currentQuestionIndex].QuestionText
             </div>
-            
+
             @switch (_test.Questions[_currentQuestionIndex].QuestionType)
             {
-                        case QuestionType.MultipleChoice:
-                            var mcq = (MultipleChoiceQuestion)_test.Questions[_currentQuestionIndex];
-                            <div class="options-group">
-                                @for (int i = 0; i < mcq.ShuffledOptions.Count; i++)
-                                {
-                                    var optionLetter = (char)('A' + i);
-                                    <label class="options-group label"> 
-                                    <input type="radio" name="testOptions_@_test.Questions[_currentQuestionIndex].QuestionId" value="@optionLetter"
-                                           @onchange="@(e => HandleMcqSelection(optionLetter))"
-                                           checked="@(_currentMcqAnswer == optionLetter)" /> 
-                                     @mcq.ShuffledOptions[i]
-                                     </label>
-                                }
-                            </div>
-                            break;
-                        case QuestionType.TrueFalse:
-                            <div class="options-group">
-                                <label class="options-group label">
-                                <input type="radio" name="testTfOptions_@_test.Questions[_currentQuestionIndex].QuestionId" value="True" @onchange="@(e => HandleTfSelection(true))"
-                                       checked="@(_currentTfAnswer == true)" /> 
-                                True
-                                 </label>
+                case QuestionType.MultipleChoice:
+                    var mcq = (MultipleChoiceQuestion)_test.Questions[_currentQuestionIndex];
+                    <div class="options-group">
+                        @for (int i = 0; i < mcq.ShuffledOptions.Count; i++)
+                        {
+                            var optionLetter = (char)('A' + i);
                             <label class="options-group label">
-                                <input type="radio" name="testTfOptions_@_test.Questions[_currentQuestionIndex].QuestionId" value="False" @onchange="@(e => HandleTfSelection(false))"
-                                       checked="@(_currentTfAnswer == false)" /> 
-                                False
+                                <input type="radio"
+                                       name="testOptions_@_test.Questions[_currentQuestionIndex].QuestionId"
+                                       value="@optionLetter"
+                                       @onchange="@(e => HandleMcqSelection(optionLetter))"
+                                       checked="@(_currentMcqAnswer == optionLetter)"/>
+                                @mcq.ShuffledOptions[i]
                             </label>
-                          </div> 
-                            break;
+                        }
+                    </div>
+                    break;
+                case QuestionType.TrueFalse:
+                    <div class="options-group">
+                        <label class="options-group label">
+                            <input type="radio" name="testTfOptions_@_test.Questions[_currentQuestionIndex].QuestionId"
+                                   value="True" @onchange="@(e => HandleTfSelection(true))"
+                                   checked="@(_currentTfAnswer == true)"/>
+                            True
+                        </label>
+                        <label class="options-group label">
+                            <input type="radio" name="testTfOptions_@_test.Questions[_currentQuestionIndex].QuestionId"
+                                   value="False" @onchange="@(e => HandleTfSelection(false))"
+                                   checked="@(_currentTfAnswer == false)"/>
+                            False
+                        </label>
+                    </div>
+                    break;
 
-                        case QuestionType.TypeIn:
-                            <input type="text" @bind-value="_currentTypeInAnswer" @bind-value:event="oninput" class="typein-input" placeholder="Type your answer here..." /> 
-                            break;
-                    }
-            
+                case QuestionType.TypeIn:
+                    <input type="text" @bind-value="_currentTypeInAnswer" @bind-value:event="oninput"
+                           class="typein-input" placeholder="Type your answer here..."/>
+                    break;
+            }
+
             <div class="practice-controls">
                 @if (_currentQuestionIndex < _test.NumberOfQuestions - 1)
                 {
-                    <button class = "btn-action btn-next" @onclick ="NextQuestion"> Next Question </button>
+                    <button class="btn-action btn-next" @onclick="NextQuestion"> Next Question</button>
                 }
                 else
                 {
-                    <button class = "btn-action" @onclick="SubmitTest"> Submit Test</button>
+                    <button class="btn-action" @onclick="SubmitTest"> Submit Test</button>
                 }
 
             </div>
@@ -349,18 +365,12 @@
 </div>
 
 @code {
-    [Parameter]
-    public int TopicId { get; set; }
-    [Parameter]
-    public string Difficulty { get; set; } = "Any";
-    [Parameter]
-    public int Length { get; set; }
-    [Parameter]
-    public bool IsTimed { get; set; }
-    [Parameter]
-    public int DurationMinutes { get; set; }
-    
-    
+    [Parameter] public int TopicId { get; set; }
+    [Parameter] public string Difficulty { get; set; } = "Any";
+    [Parameter] public int Length { get; set; }
+    [Parameter] public bool IsTimed { get; set; }
+    [Parameter] public int DurationMinutes { get; set; }
+
 
     private Test _test;
     private string _currentTopicTitle = "Test";
@@ -370,13 +380,11 @@
     private char _currentMcqAnswer;
     private bool? _currentTfAnswer;
     private string _currentTypeInAnswer;
-    
+
     private Dictionary<int, object> _userAnswers = new Dictionary<int, object>();
 
     private System.Timers.Timer _timer; // The timer object
     private TimeSpan _remainingTime; // The time left for the test
-
-    
 
 
     protected override async Task OnInitializedAsync()
@@ -415,7 +423,6 @@
         catch (Exception ex)
         {
             _errorMessage = $"An error occurred while loading the test: {ex.Message}";
-
         }
     }
 
@@ -437,6 +444,7 @@
             _remainingTime = TimeSpan.Zero;
             await SubmitTest();
         }
+
         StateHasChanged();
     }
 
@@ -451,10 +459,11 @@
         _currentTfAnswer = value;
         _userAnswers[_test.Questions[_currentQuestionIndex].QuestionId] = value;
     }
+
     private void HandleTypeInAnswer(ChangeEventArgs e)
     {
-        _currentTypeInAnswer = e.Value?.ToString(); 
-        
+        _currentTypeInAnswer = e.Value?.ToString();
+
         _userAnswers[_test.Questions[_currentQuestionIndex].QuestionId] = _currentTypeInAnswer;
     }
 
@@ -463,26 +472,26 @@
         _currentQuestionIndex++;
         ClearCurrentQuestionAnswerInputs();
         LoadCurrentQuestionAnswer();
-        
+
         StateHasChanged();
     }
 
     private void LoadCurrentQuestionAnswer()
     {
         var currentQuestion = _test.Questions[_currentQuestionIndex];
-        if(_userAnswers.TryGetValue(currentQuestion.QuestionId, out object savedAnswer))
+        if (_userAnswers.TryGetValue(currentQuestion.QuestionId, out object savedAnswer))
         {
             switch (currentQuestion.QuestionType)
-            { 
+            {
                 case QuestionType.MultipleChoice:
-                _currentMcqAnswer = savedAnswer is char ? (char)savedAnswer : default(char);
-                break; 
-                case QuestionType.TrueFalse: 
-                _currentTfAnswer = savedAnswer is bool ? (bool)savedAnswer : (bool?)null; 
-                break;
+                    _currentMcqAnswer = savedAnswer is char ? (char)savedAnswer : default(char);
+                    break;
+                case QuestionType.TrueFalse:
+                    _currentTfAnswer = savedAnswer is bool ? (bool)savedAnswer : (bool?)null;
+                    break;
                 case QuestionType.TypeIn:
-                _currentTypeInAnswer = savedAnswer is string ? (string)savedAnswer : string.Empty;
-                break;
+                    _currentTypeInAnswer = savedAnswer is string ? (string)savedAnswer : string.Empty;
+                    break;
             }
         }
     }
@@ -502,7 +511,7 @@
 
         _test.TestEndTime = DateTime.UtcNow;
         _test.IsCompleted = true;
-        
+
 
         _test.CorrectAnswerCount = 0;
         _test.TotalQuestionsAttempt = 0;
@@ -512,13 +521,12 @@
             if (_userAnswers.TryGetValue(question.QuestionId, out object userAnswer))
             {
                 _test.TotalQuestionsAttempt++;
-                
+
                 if (question.Grade(userAnswer))
                 {
                     _test.CorrectAnswerCount++; // Increment correct answers if the question was graded true.
                 }
             }
-
         }
 
         int currentUserId = (int)UserSession.UserId;
@@ -536,6 +544,7 @@
                 testEndTime: _test.TestEndTime
             );
         }
+
         try
         {
             await TestResultService.SaveTestResult(testResult);
@@ -544,6 +553,7 @@
         {
             //Error while saving.
         }
+
         StateHasChanged();
     }
 
@@ -551,4 +561,5 @@
     {
         NavigationManager.NavigateTo("/Topic");
     }
+
 }
