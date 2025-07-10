@@ -3,9 +3,11 @@ namespace BlazorApp3.Services;
 using BlazorApp3.Data;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Class for communicating with the math topics in the database.
+/// </summary>
 public class TopicService
 {
-//Class for communicating with the data base
     private readonly ApplicationDbContext _dbContext;
 
     public TopicService(ApplicationDbContext dbContext)

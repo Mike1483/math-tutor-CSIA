@@ -7,9 +7,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 
+/// <summary>
+/// Class for communicating with questions in the database
+/// </summary>
 public class QuestionService
 {
-    //Class for communicating with the database
     private readonly ApplicationDbContext _dbContext;
     private static readonly Random _random = new Random(); // Static Random instance for efficient randomness
 
@@ -36,7 +38,7 @@ public class QuestionService
 
         if (question is MultipleChoiceQuestion mcq)
         {
-            mcq.QuestionRandomization(); // Call the randomization method directly
+            RandomizeMultipleChoiceQuestions(mcq); // Call the randomization method directly
         }
 
         return question;
@@ -59,7 +61,7 @@ public class QuestionService
 
         if (question is MultipleChoiceQuestion mcq)
         {
-            mcq.QuestionRandomization(); // Call the randomization method directly
+            RandomizeMultipleChoiceQuestions(mcq); // Call the randomization method directly
         }
 
         return question;
@@ -81,7 +83,7 @@ public class QuestionService
 
         if (question is MultipleChoiceQuestion mcq)
         {
-            mcq.QuestionRandomization(); // Call the randomization method directly
+            RandomizeMultipleChoiceQuestions(mcq); // Call the randomization method directly
         }
 
         return question;
@@ -106,7 +108,7 @@ public class QuestionService
         {
             if (question is MultipleChoiceQuestion mcq)
             {
-                mcq.QuestionRandomization();
+                RandomizeMultipleChoiceQuestions(mcq);
             }
         }
 
@@ -122,5 +124,63 @@ public class QuestionService
     {
         _dbContext.Questions.Add(question);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public void RandomizeMultipleChoiceQuestions(MultipleChoiceQuestion question)
+    {
+        var optionsToShuffle = new List<string>()
+        {
+            question.Choice1, question.Choice2, question.Choice3, question.Choice4,
+        }; // Creating a list of current options
+
+        string CorrectOptionText = ""; //For the new correct text
+        switch (char.ToUpper(question.CorrectOption)) //Assigns ChoiceX to CorrectOptionText
+        {
+            case 'A':
+                CorrectOptionText = question.Choice1;
+                break;
+            case 'B':
+                CorrectOptionText = question.Choice2;
+                break;
+            case 'C':
+                CorrectOptionText = question.Choice3;
+                break;
+            case 'D':
+                CorrectOptionText = question.Choice4;
+                break;
+            default:
+                ;
+                return;
+        }
+
+        int n = optionsToShuffle.Count;
+
+        for (int i = n - 1; i > 0; i--)
+        {
+            int j = _random.Next(i + 1);
+            string temp = optionsToShuffle[i];
+            optionsToShuffle[i] = optionsToShuffle[j];
+            optionsToShuffle[j] = temp;
+        }
+
+        question.Choice1 = optionsToShuffle[0];
+        question.Choice2 = optionsToShuffle[1];
+        question.Choice3 = optionsToShuffle[2];
+        question.Choice4 = optionsToShuffle[3];
+
+        int newCorrectOptionIndex = optionsToShuffle.IndexOf(CorrectOptionText);
+
+        if (newCorrectOptionIndex != -1) // Check if it was found
+        {
+            question.CorrectOption = (char)('A' + newCorrectOptionIndex); // Converting back by adding a number to 'A'
+        }
+
+        question.ShuffledOptions = optionsToShuffle; //The initial list is assigned the values of options to shuffle
+        question.NewCorrectOptionIndex = newCorrectOptionIndex;
+
+        if (newCorrectOptionIndex != -1) //Checks if the NewCorrectOptonsIndex is found
+        {
+            question.NewCorrectOption = (char)('A' + newCorrectOptionIndex);
+        }
     }
 }

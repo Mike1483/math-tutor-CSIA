@@ -3,7 +3,9 @@ namespace BlazorApp3.Services;
 using Microsoft.EntityFrameworkCore;
 using BlazorApp3.Data;
 
-//Class for communicating with the data base
+/// <summary>
+/// Class for communicating with the User table in the database
+/// </summary>
 public class UserService
 {
     private readonly ApplicationDbContext _dbContext;

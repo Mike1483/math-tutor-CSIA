@@ -3,6 +3,9 @@ namespace BlazorApp3.Services;
 using BlazorApp3.Data;
 using Microsoft.EntityFrameworkCore;
 
+/// <summary>
+/// Class for communicating with Test Results in the database
+/// </summary>
 public class TestResultService
 {
     private readonly ApplicationDbContext _dbContext;

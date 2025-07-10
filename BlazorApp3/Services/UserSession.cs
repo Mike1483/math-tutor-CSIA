@@ -1,6 +1,8 @@
 namespace BlazorApp3.Services;
 
-//class for registering user session
+/// <summary>
+/// Class for registering user sessions
+/// </summary>
 public class UserSession
 {
     public int? UserId { get; set; }
