@@ -54,6 +54,97 @@
             border: 1px solid #ffeeba;
         }
 
+        .settings-form-card {
+            background-color: #fefefe;
+            border: 1px solid #dbe9f4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            max-width: 400px; /* Constrain width for forms */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .settings-form-card h6 {
+            font-size: 1.2em;
+            color: #343a40;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .settings-form-card .form-group {
+            max-width: none;
+        }
+
+        .password-requirements {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            text-align: left; /* Align list items to the left */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            padding: 10px;
+        }
+
+        .password-requirements li {
+            padding: 5px 0;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+        }
+
+        .password-requirements li::before { /* Custom checkmark/cross icon */
+            content: '\2717'; /* Unicode cross mark */
+            color: #dc3545; /* Red for invalid */
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .password-requirements li.valid::before {
+            content: '\2713'; /* Unicode check mark */
+            color: #28a745; /* Green for valid */
+        }
+
+        .password-requirements li.valid {
+            color: #28a745; /* Green text for valid */
+        }
+
+        .password-requirements li.invalid {
+            color: #dc3545; /* Red text for invalid */
+        }
+
+        .settings-form-card .password-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .settings-form-card .password-input-group .form-control {
+            flex-grow: 1;
+        }
+
+        .toggle-password-button {
+            background-color: #e0e0e0; /* Light grey button */
+            color: #333;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em; /* Smaller font for toggle button */
+            transition: background-color 0.2s ease;
+            white-space: nowrap; /* Prevent text from wrapping */
+        }
+
+        .toggle-password-button:hover {
+            background-color: #d0d0d0;
+        }
+
     </style>
     @if (UserSession.isLoggedIn)
     {
@@ -64,6 +155,9 @@
 
             <div class="button-group">
                 <button class="btn-action" @onclick="Logout">Logout</button>
+                <button class="btn-action" @onclick="ShowChangeEmailForm">Change Email</button>
+                <button class="btn-action" @onclick="ShowChangePasswordForm">Change Password</button>
+
 
                 @if (!_showConfirmationButtons)
                 {
@@ -82,6 +176,59 @@
                     We're sad to see you go! Press 'Confirm Delete' to finalize. This action cannot be undone.
                 </p>
             }
+            @if (!string.IsNullOrEmpty(_settingsMessage))
+            {
+                <div class="alert @(_settingsSuccess ? "alert-success" : "alert-danger") mt-3">
+                    @_settingsMessage
+                </div>
+            }
+            @if (_showChangeEmailForm)
+            {
+                <div class="settings-form-card">
+                    <h6>Change Email</h6>
+                    <div class="form-group">
+                        <label for="newEmail">New Email:</label>
+                        <input type="email" id="newEmail" class="form-control" @bind="_newEmail"
+                               placeholder="Enter new email"/>
+                    </div>
+                    <button class="btn-action btn-success" @onclick="AttemptChangeEmail">Save Email</button>
+                    <button class="btn-action" @onclick="CancelForms">Cancel</button>
+                </div>
+            }
+            @if (_showChangePasswordForm)
+            {
+                <div class="settings-form-card">
+                    <h6>Change Password</h6>
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password:</label>
+                        <input type="password" id="currentPassword" class="form-control" @bind="_currentPassword"
+                               placeholder="Enter current password"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password:</label>
+                        <div class="password-input-group">
+                            <input type="@passwordInputType" id="newPassword" class="form-control" @bind="_newPassword"
+                                   @oninput="OnNewPasswordInput" placeholder="Enter new password"/>
+                            <button type="button" class="toggle-password-button" @onclick="TogglePasswordVisibility">
+                                @(showPassword ? "Hide" : "Show")
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password:</label>
+                        <input type="password" id="confirmNewPassword" class="form-control" @bind="_confirmNewPassword"
+                               placeholder="Confirm new password"/>
+                    </div>
+                    <ul class="password-requirements"> Password must:
+                        <li class="@(hasLength ? "valid" : "invalid")"> Have at least 7 characters</li>
+                        <li class="@(hasUpper ? "valid" : "invalid")"> Have at least 1 uppercase letter</li>
+                        <li class="@(hasDigit ? "valid" : "invalid")"> Have at least 1 number</li>
+                        <li class="@(hasSpecial ? "valid" : "invalid")"> Have at least 1 special character</li>
+                    </ul>
+                    <button class="btn-action btn-success" @onclick="AttemptChangePassword">Save Password</button>
+                    <button class="btn-action" @onclick="CancelForms">Cancel</button>
+                </div>
+            }
         </div>
     }
     else
@@ -93,23 +240,50 @@
 @code {
     private bool _showConfirmationButtons = false;
 
+    private bool _showChangeEmailForm = false;
+    private string _newEmail = "";
+
+    private bool _showChangePasswordForm = false;
+    private string _currentPassword = "";
+    private string _newPassword = "";
+    private string _confirmNewPassword = "";
+
+    private bool showPassword = false;
+    private string passwordInputType = "password";
+    bool hasLength = false;
+    bool hasUpper = false;
+    bool hasDigit = false;
+    bool hasSpecial = false;
+    bool isError = false;
+
+    private string _settingsMessage = "";
+    private bool _settingsSuccess = false;
+    private System.Text.RegularExpressions.Regex emailRegex = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
+
+
     async Task Logout()
     {
         //Logout Function for now, will be in settings menu
         UserSession.clear();
         _showConfirmationButtons = false;
+        _showChangeEmailForm = false;
+        _showChangePasswordForm = false;
+        ClearMessages();
         await Task.Delay(2000);
         NavigationManager.NavigateTo("/");
     }
 
     private void ShowDeleteConfirmation()
     {
+        CancelForms();
         _showConfirmationButtons = true;
+        ClearMessages();
     }
 
     private async Task ConfirmDeleteUser()
     {
         _showConfirmationButtons = false;
+        ClearMessages();
         try
         {
             await UserService.DeleteUserByUsername(UserSession.UserName); // Log success
@@ -119,13 +293,14 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Error" + ex);
+            SetMessage($"Error deleting account: {ex.Message}", isError: true);
         }
     }
 
     private void CancelDeleteConfirmation()
     {
         _showConfirmationButtons = false;
+        ClearMessages();
     }
 
     public void NavigateToTopic()
@@ -134,5 +309,175 @@
         NavigationManager.NavigateTo("/Topic");
     }
 
+    private void ShowChangeEmailForm()
+    {
+        CancelForms();
+        _showChangeEmailForm = true;
+        _newEmail = UserSession.Email;
+        ClearMessages();
+    }
+
+    private async Task AttemptChangeEmail()
+    {
+        ClearMessages();
+        if (string.IsNullOrWhiteSpace(_newEmail)) // Removed _currentPasswordEmail check
+        {
+            SetMessage("New email is required.", isError: true);
+            return;
+        }
+
+        if (!IsValidEmail(_newEmail))
+        {
+            SetMessage("Please enter a valid email address.", isError: true);
+            return;
+        }
+
+        try
+        {
+            var success = await UserService.ChangeEmailAsync((int)UserSession.UserId, _newEmail); // Updated method call
+            if (success)
+            {
+                SetMessage("Email changed successfully", isError: false);
+            }
+            else
+            {
+                SetMessage("Failed to change email", isError: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetMessage($"An error occurred: {ex.Message}", isError: true);
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                SetMessage("Email is required.", isError = true);
+                return false;
+            }
+            else if (!emailRegex.IsMatch(email))
+            {
+                SetMessage("Invalid email address format.", isError = true);
+                return false;
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void ShowChangePasswordForm()
+    {
+        CancelForms(); // Hide other forms
+        _showChangePasswordForm = true;
+        _currentPassword = "";
+        _newPassword = "";
+        _confirmNewPassword = "";
+        UpdatePasswordRequirements(); // Reset validation indicators
+        ClearMessages();
+    }
+
+    private async Task AttemptChangePassword()
+    {
+        ClearMessages();
+        if (string.IsNullOrWhiteSpace(_currentPassword) || string.IsNullOrWhiteSpace(_newPassword) || string.IsNullOrWhiteSpace(_confirmNewPassword))
+        {
+            SetMessage("All password fields are required.", isError: true);
+            return;
+        }
+
+        if (_newPassword != _confirmNewPassword)
+        {
+            SetMessage("New password and confirmation do not match.", isError: true);
+            return;
+        }
+
+        if (!IsPasswordValid(_newPassword))
+        {
+            SetMessage("New password does not meet all requirements.", isError: true);
+            return;
+        }
+
+        if (_currentPassword == _newPassword)
+        {
+            SetMessage("New password cannot be the same as the current password.", isError: true);
+            return;
+        }
+
+        try
+        {
+            // UserService.ChangePasswordAsync will need to be implemented
+            var success = await UserService.ChangePasswordAsync((int)UserSession.UserId, _currentPassword, _newPassword);
+
+            if (success)
+            {
+                SetMessage("Password changed successfully! Please log in with your new password.", isError: false);
+            }
+            else
+            {
+                SetMessage("Failed to change password. Incorrect current password.", isError: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            SetMessage($"An error occurred: {ex.Message}", isError: true);
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+        passwordInputType = showPassword ? "text" : "password";
+    }
+
+    void OnNewPasswordInput(ChangeEventArgs a)
+    {
+        _newPassword = a.Value?.ToString() ?? "";
+        UpdatePasswordRequirements();
+    }
+
+    void UpdatePasswordRequirements()
+    {
+        hasLength = _newPassword.Length >= 7;
+        hasUpper = _newPassword.Any(char.IsUpper);
+        hasDigit = _newPassword.Any(char.IsDigit);
+        hasSpecial = _newPassword.Any(c => !char.IsLetterOrDigit(c));
+    }
+
+    bool IsPasswordValid(string passwordToCheck)
+    {
+        return passwordToCheck.Length >= 7 &&
+               passwordToCheck.Any(char.IsUpper) &&
+               passwordToCheck.Any(char.IsDigit) &&
+               passwordToCheck.Any(c => !char.IsLetterOrDigit(c));
+    }
+
+    private void CancelForms()
+    {
+        _showConfirmationButtons = false;
+        _showChangeEmailForm = false;
+        _showChangePasswordForm = false;
+        ClearMessages();
+    }
+
+    private void SetMessage(string message, bool isError = false)
+    {
+        _settingsMessage = message;
+        _settingsSuccess = !isError;
+        StateHasChanged();
+    }
+
+    private void ClearMessages()
+    {
+        _settingsMessage = "";
+        _settingsSuccess = false;
+    }
 
 }

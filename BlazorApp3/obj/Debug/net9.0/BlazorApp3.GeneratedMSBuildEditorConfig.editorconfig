@@ -44,6 +44,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Mb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/Components/Pages/MainTabs.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NYWluVGFicy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/Components/Pages/Practice.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QcmFjdGljZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -54,10 +58,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/Components/Pages/Settings.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TZXR0aW5ncy5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/Components/Pages/Shapes.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9TaGFwZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/mykolasplatukis/RiderProjects/BlazorApp3/BlazorApp3/Components/Pages/Stats.razor]

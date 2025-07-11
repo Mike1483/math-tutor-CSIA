@@ -336,7 +336,7 @@
         try
         {
             // Optional: Check if username or email already exists to prevent duplicates
-            var existingUser = await UserService.GetUserByUserName(username);
+            var existingUser = await UserService.GetUserByUserEmail(email);
 
             if (existingUser != null) //Check if a user already exists.
             {

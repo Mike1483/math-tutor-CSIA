@@ -7,15 +7,17 @@ public class UserSession
 {
     public int? UserId { get; set; }
     public string? UserName { get; set; }
+    public string? Email { get; set; }
 
     public bool IsAdmin { get; set; }
 
 
-    public void Login(int? userId, string? userName, bool isAdmin)
+    public void Login(int? userId, string? userName, bool isAdmin, string? email)
     {
         UserId = userId;
         UserName = userName;
         IsAdmin = isAdmin;
+        Email = email;
     }
 
     public bool isLoggedIn

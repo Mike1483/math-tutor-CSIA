@@ -29,7 +29,7 @@
         }
 
         .btn-register {
-            background-color: #6c757d; /* A neutral grey */
+            background-color: #6c757d; /* grey */
             color: white;
             padding: 10px 20px;
             border: none;
@@ -86,18 +86,20 @@
             background-color: #d0d0d0;
         }
     </style>
+
     <div class="login-card">
-        <h1 class="main-card-header">Login</h1>
+        <h1 class="main-card-header">Welcome to Math Tutor!</h1>
         @if (!UserSession.isLoggedIn)
         {
             <div class="form-group">
-                <label for="username">Username: </label>
-                <input type="text" @bind="username" class="form-control"/>
+                <label for="email">Email: </label>
+                <input type="email" id="email" @bind="email" class="form-control" placeholder="Enter your email"/>
             </div>
             <div class="form-group">
                 <label for="password">Password: </label>
                 <div class="password-input-group">
-                    <input type="@passwordInputType" id="password" @bind="password" class="form-control"/>
+                    <input type="@passwordInputType" id="password" @bind="password" class="form-control"
+                           placeholder="Enter your password"/>
                     <button type="button" class="toggle-password-button" @onclick="TogglePasswordVisibility">
                         @(showPassword ? "Hide" : "Show")
                     </button>
@@ -108,7 +110,7 @@
 
             @if (loginFailed)
             {
-                <div class="alert alert-danger">Login failed. Invalid username or password</div>
+                <div class="alert alert-danger">Login failed. Invalid email or password</div>
             }
 
             <p style="margin-top: 25px; color: #6c757d;">Don't have an account?</p>
@@ -128,7 +130,7 @@
 </div>
 
 @code {
-    string username = "";
+    string email = "";
     string password = "";
     bool loginFailed = false;
 
@@ -150,11 +152,11 @@
     async Task AttemptLogin()
     {
         loginFailed = false;
-        loggedInUser = await UserService.LoginUser(username, password);
+        loggedInUser = await UserService.LoginUser(email, password);
 
         if (loggedInUser != null)
         {
-            UserSession.Login(loggedInUser.UserId, loggedInUser.UserName, loggedInUser.IsAdmin);
+            UserSession.Login(loggedInUser.UserId, loggedInUser.UserName, loggedInUser.IsAdmin, loggedInUser.Email);
 
             password = ""; //Clears the field
         }
@@ -169,7 +171,7 @@
     {
         //Logout Function for now, will be in settings menu
         loggedInUser = null;
-        username = "";
+        email = "";
         password = "";
         UserSession.clear();
         NavigationManager.NavigateTo("/");
